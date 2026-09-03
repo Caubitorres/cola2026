@@ -3,15 +3,10 @@ name: Atualizar candidatos 2026
 on:
   workflow_dispatch:
   schedule:
-    # 00h, 06h, 12h e 18h no horário de Brasília (cron usa UTC)
-    - cron: '0 3,9,15,21 * * *'
+    - cron: '20 2,8,14,20 * * *'
 
 permissions:
   contents: write
-
-concurrency:
-  group: atualizar-candidatos-2026
-  cancel-in-progress: true
 
 jobs:
   atualizar:
@@ -26,120 +21,140 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Descobrir links atuais no catálogo do TSE
-        id: tse
+      - name: Baixar base espelhada no GitHub
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import json
-          import os
-          import urllib.request
-
-          api = 'https://dadosabertos.tse.jus.br/api/3/action/package_show?id=candidatos-2026'
-          req = urllib.request.Request(
-              api,
-              headers={
-                  'User-Agent': 'Mozilla/5.0 GitHubActions/1.0',
-                  'Accept': 'application/json,text/plain,*/*',
-                  'Referer': 'https://dadosabertos.tse.jus.br/pt_BR/dataset/candidatos-2026',
-              },
-          )
-
-          with urllib.request.urlopen(req, timeout=60) as r:
-              payload = json.load(r)
-
-          if not payload.get('success'):
-              raise SystemExit('A API do TSE respondeu sem success=true')
-
-          resources = payload['result']['resources']
-
-          def find_resource(exact_name):
-              exact_name_lower = exact_name.casefold()
-              for res in resources:
-                  if (res.get('name') or '').strip().casefold() == exact_name_lower:
-                      return res
-              # fallback por trecho do nome
-              for res in resources:
-                  if exact_name_lower in (res.get('name') or '').strip().casefold():
-                      return res
-              raise SystemExit(f'Recurso não encontrado no catálogo: {exact_name}')
-
-          cand = find_resource('Candidatos')
-          rn = find_resource('RN - Fotos de candidatos')
-          br = find_resource('BR - Fotos de candidatos')
-
-          for label, res in [('CAND', cand), ('RN', rn), ('BR', br)]:
-              print(f"{label}: {res.get('name')} -> {res.get('url')}")
-
-          out = os.environ['GITHUB_OUTPUT']
-          with open(out, 'a', encoding='utf-8') as f:
-              f.write(f"candidatos_url={cand['url']}\n")
-              f.write(f"rn_fotos_url={rn['url']}\n")
-              f.write(f"br_fotos_url={br['url']}\n")
-          PY
-
-      - name: Baixar dados oficiais do TSE
-        shell: bash
-        env:
-          CANDIDATOS_URL: ${{ steps.tse.outputs.candidatos_url }}
-          RN_FOTOS_URL: ${{ steps.tse.outputs.rn_fotos_url }}
-          BR_FOTOS_URL: ${{ steps.tse.outputs.br_fotos_url }}
-        run: |
-          set -euo pipefail
-          mkdir -p .tmp_tse
-
-          baixar() {
-            local url="$1"
-            local destino="$2"
-            echo "Baixando: $url"
-            curl --fail-with-body --location \
-              --retry 4 --retry-all-errors --retry-delay 5 \
-              --connect-timeout 30 --max-time 300 \
-              -A 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
-              -H 'Accept: */*' \
-              -H 'Referer: https://dadosabertos.tse.jus.br/pt_BR/dataset/candidatos-2026' \
-              -o "$destino" "$url"
-          }
-
-          baixar "$CANDIDATOS_URL" '.tmp_tse/consulta_cand_2026.zip'
-          baixar "$RN_FOTOS_URL" '.tmp_tse/foto_cand2026_RN_div.zip'
-          baixar "$BR_FOTOS_URL" '.tmp_tse/foto_cand2026_BR_div.zip'
-
-          echo 'Arquivos recebidos:'
-          ls -lh .tmp_tse
-
-          python - <<'PY'
-          import zipfile
-          from pathlib import Path
-          arquivos = [
-              Path('.tmp_tse/consulta_cand_2026.zip'),
-              Path('.tmp_tse/foto_cand2026_RN_div.zip'),
-              Path('.tmp_tse/foto_cand2026_BR_div.zip'),
-          ]
-          for p in arquivos:
-              if not zipfile.is_zipfile(p):
-                  começo = p.read_bytes()[:200]
-                  raise SystemExit(f'{p} não é um ZIP válido. Primeiros bytes: {começo!r}')
-              print('ZIP válido:', p)
-          PY
+          mkdir -p .tmp_tse dados
+          URL="https://raw.githubusercontent.com/leofn/tse-candidatos-2026/main/dados/consulta_cand_2026_BRASIL.csv"
+          echo "Baixando: $URL"
+          curl --fail --location --retry 4 --retry-delay 5 \
+            -o .tmp_tse/consulta_cand_2026_BRASIL.csv "$URL"
+          test -s .tmp_tse/consulta_cand_2026_BRASIL.csv
+          echo "Arquivo baixado com sucesso:"
+          ls -lh .tmp_tse/consulta_cand_2026_BRASIL.csv
 
       - name: Gerar base usada pela página
-        run: python scripts/atualizar_tse.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv, json, os, unicodedata
+
+          origem = '.tmp_tse/consulta_cand_2026_BRASIL.csv'
+          destino = 'dados/candidatos-2026.json'
+
+          def norm(s):
+              s = (s or '').strip().upper()
+              return ''.join(c for c in unicodedata.normalize('NFD', s)
+                             if unicodedata.category(c) != 'Mn')
+
+          cargo_map = {
+              'DEPUTADO FEDERAL': 'deputado_federal',
+              'DEPUTADO ESTADUAL': 'deputado_estadual',
+              'DEPUTADO DISTRITAL': 'deputado_estadual',
+              'SENADOR': 'senador',
+              'GOVERNADOR': 'governador',
+              'PRESIDENTE': 'presidente',
+          }
+
+          # Identificador do pleito 2026 usado pelo DivulgaCandContas.
+          ID_ELEICAO_DIVULGACAND = '2062262026'
+
+          registros = []
+          vistos = set()
+
+          # Os CSVs do TSE costumam vir em Latin-1/Windows-1252.
+          with open(origem, 'r', encoding='latin-1', newline='') as f:
+              leitor = csv.DictReader(f, delimiter=';')
+              for row in leitor:
+                  uf = (row.get('SG_UF') or '').strip().upper()
+                  cargo_original = norm(row.get('DS_CARGO'))
+                  cargo = cargo_map.get(cargo_original)
+                  if not cargo:
+                      continue
+
+                  # Nossa cola: RN para cargos estaduais/federais e BR para Presidente.
+                  if cargo == 'presidente':
+                      if uf not in ('BR', 'ZZ'):
+                          continue
+                      uf_saida = 'BR'
+                  else:
+                      if uf != 'RN':
+                          continue
+                      uf_saida = 'RN'
+
+                  numero = str(row.get('NR_CANDIDATO') or '').strip()
+                  sq = str(row.get('SQ_CANDIDATO') or '').strip()
+                  if not numero or not sq:
+                      continue
+
+                  chave = (uf_saida, cargo, numero)
+                  if chave in vistos:
+                      continue
+                  vistos.add(chave)
+
+                  nome = (row.get('NM_URNA_CANDIDATO') or row.get('NM_CANDIDATO') or '').strip()
+                  partido = (row.get('SG_PARTIDO') or '').strip()
+                  situacao = (row.get('DS_SITUACAO_CANDIDATURA') or '').strip()
+
+                  # Foto oficial do DivulgaCandContas. A imagem é carregada pelo navegador.
+                  foto_uf = 'BR' if cargo == 'presidente' else uf_saida
+                  foto = (
+                      'https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/'
+                      f'{ID_ELEICAO_DIVULGACAND}/{sq}/{foto_uf}'
+                  )
+
+                  registros.append({
+                      'uf': uf_saida,
+                      'cargo': cargo,
+                      'numero': numero,
+                      'nomeUrna': nome,
+                      'partido': partido,
+                      'situacao': situacao,
+                      'sqCandidato': sq,
+                      'foto': foto,
+                  })
+
+          ordem = {
+              'deputado_federal': 1,
+              'deputado_estadual': 2,
+              'senador': 3,
+              'governador': 4,
+              'presidente': 5,
+          }
+          registros.sort(key=lambda x: (ordem.get(x['cargo'], 99), x['uf'], int(x['numero']) if x['numero'].isdigit() else 999999, x['nomeUrna']))
+
+          os.makedirs(os.path.dirname(destino), exist_ok=True)
+          with open(destino, 'w', encoding='utf-8') as f:
+              json.dump(registros, f, ensure_ascii=False, indent=2)
+
+          print(f'Gerados {len(registros)} registros em {destino}')
+          if not registros:
+              raise SystemExit('ERRO: nenhum candidato RN/Presidente foi encontrado na base espelhada.')
+          PY
+
+          echo "Primeiros registros gerados:"
+          python - <<'PY'
+          import json
+          with open('dados/candidatos-2026.json', encoding='utf-8') as f:
+              dados = json.load(f)
+          for x in dados[:5]:
+              print(x['cargo'], x['numero'], x['nomeUrna'], x['partido'])
+          PY
 
       - name: Publicar alterações no repositório
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
-          git add dados/candidatos-2026.json fotos/ || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dados/candidatos-2026.json
 
           if git diff --cached --quiet; then
-            echo 'Nenhuma alteração nos dados.'
+            echo "Nenhuma alteração na base de candidatos."
             exit 0
           fi
 
-          git commit -m 'Atualiza base oficial de candidatos 2026'
+          git commit -m "Atualiza candidatos 2026"
           git push
