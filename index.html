@@ -356,15 +356,6 @@
       margin-top: 2px;
     }
 
-    .data-cola {
-      text-align: center;
-      margin-top: 9px;
-      padding-top: 7px;
-      border-top: 1px solid #ddd;
-      font-size: 10px;
-      color: #777;
-    }
-
     .autor {
       margin-top: 8px;
       font-size: 11px;
@@ -416,10 +407,10 @@
         display: grid !important;
         grid-template-columns: 1fr 1fr;
         grid-template-rows: repeat(2, minmax(0, 1fr));
-        gap: 3mm;
+        gap: 2mm;
         width: 100%;
-        height: 285mm;
-        max-height: 285mm;
+        height: 278mm;
+        max-height: 278mm;
         align-items: stretch;
         overflow: hidden;
         break-inside: avoid;
@@ -434,7 +425,7 @@
         min-height: 0;
         border: 1px dashed #000;
         border-radius: 0;
-        padding: 4mm;
+        padding: 3.5mm;
         box-shadow: none;
         overflow: hidden;
         break-inside: avoid;
@@ -442,20 +433,17 @@
       }
 
       body.print-4 #printArea4 .cola h2 { font-size: 16px; margin: 0 0 1px; }
-      body.print-4 #printArea4 .cola .sub { font-size: 9px; margin-bottom: 4px; }
-      body.print-4 #printArea4 .linha-cola { padding: 3px 0; gap: 2px; }
+      body.print-4 #printArea4 .cola .sub { font-size: 9px; margin-bottom: 3px; }
+      body.print-4 #printArea4 .linha-cola { padding: 2.5px 0; gap: 1px; }
       body.print-4 #printArea4 .linha-principal { gap: 6px; }
       body.print-4 #printArea4 .cargo { font-size: 9px; }
       body.print-4 #printArea4 .numero { font-size: 18px; letter-spacing: 2px; }
       body.print-4 #printArea4 .nome-cola { font-size: 10px; line-height: 1.15; margin-top: 1px; }
       body.print-4 #printArea4 .partido-cola { font-size: 8px; margin-top: 1px; }
       body.print-4 #printArea4 .mini-foto { width: 27px; min-width: 27px; height: 34px; }
-      body.print-4 #printArea4 .data-cola { font-size: 7px; margin-top: 3px; padding-top: 3px; }
 
       .numero { font-size: 22px; }
       .nome-cola { font-size: 13px; }
-      .data-cola { color: #666; }
-    }
   </style>
 </head>
 <body>
@@ -618,8 +606,6 @@
           </div>
         </div>
       </div>
-
-      <div class="data-cola" id="dataCola"></div>
 
       <div class="acoes" style="margin-top:14px">
         <button class="principal" id="imprimir1" type="button">Imprimir 1 cola</button>
@@ -810,7 +796,6 @@
     document.getElementById('gerar').addEventListener('click',()=>{
       if(!validar()) return;
       campos.forEach(preencherLinhaCola);
-      atualizarDataCola();
       const cola=document.getElementById('cola'); cola.style.display='block'; cola.scrollIntoView({behavior:'smooth',block:'start'});
     });
 
@@ -823,28 +808,18 @@
       document.getElementById('cola').style.display='none';
     });
 
-    function formatarDataHoje(){
-      return new Intl.DateTimeFormat('pt-BR').format(new Date());
-    }
-
-    function atualizarDataCola(){
-      document.getElementById('dataCola').textContent = formatarDataHoje();
-    }
-
     function limparModoImpressao(){
       document.body.classList.remove('print-1','print-4');
       document.getElementById('printArea4').innerHTML='';
     }
 
     function imprimirUma(){
-      atualizarDataCola();
       limparModoImpressao();
       document.body.classList.add('print-1');
       window.print();
     }
 
     function imprimirQuatro(){
-      atualizarDataCola();
       limparModoImpressao();
       const original=document.getElementById('cola');
       const area=document.getElementById('printArea4');
