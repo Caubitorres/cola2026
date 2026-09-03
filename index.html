@@ -903,14 +903,24 @@
 
     async function carregarFotoSegura(url){
       if(!url) return null;
-      try{
-        const resposta = await fetch(url, { mode:'cors', cache:'force-cache' });
-        if(!resposta.ok) throw new Error('foto indisponível');
-        const blob = await resposta.blob();
-        return await blobParaImagem(blob);
-      }catch(e){
-        return null;
+
+      const tentativas = [
+        url,
+        `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=220&h=280&fit=cover&output=jpg`
+      ];
+
+      for(const endereco of tentativas){
+        try{
+          const resposta = await fetch(endereco, { mode:'cors', cache:'force-cache' });
+          if(!resposta.ok) continue;
+          const blob = await resposta.blob();
+          if(!blob.type.startsWith('image/')) continue;
+          return await blobParaImagem(blob);
+        }catch(e){
+          // tenta a próxima alternativa
+        }
       }
+      return null;
     }
 
     function corAvatar(indice){
@@ -953,7 +963,7 @@
       ctx.fillText('Cola Eleitoral 2026', 540, 112);
       ctx.fillStyle = '#536063';
       ctx.font = '28px Arial';
-      ctx.fillText('Rio Grande do Norte • Story para compartilhamento', 540, 160);
+      ctx.fillText('Rio Grande do Norte', 540, 160);
 
       const cardX = 64;
       const cardW = 952;
