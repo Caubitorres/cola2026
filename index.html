@@ -356,6 +356,23 @@
       margin-top: 2px;
     }
 
+    .data-cola {
+      text-align: center;
+      margin-top: 9px;
+      padding-top: 7px;
+      border-top: 1px solid #ddd;
+      font-size: 10px;
+      color: #777;
+    }
+
+    .autor {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #777;
+    }
+
+    #printArea4 { display: none; }
+
     .rodape {
       text-align: center;
       color: var(--muted);
@@ -380,18 +397,55 @@
       body { background: #fff; }
       .wrap { max-width: 100%; padding: 0; }
       .topo, .aviso, .base-card, .form-card, .rodape { display: none !important; }
-      .cola {
+      .acoes { display: none !important; }
+      @page { size: A4 portrait; margin: 8mm; }
+
+      body.print-1 #cola {
         display: block !important;
-        margin: 0;
+        margin: 0 auto;
         border: 1px dashed #000;
         border-radius: 0;
         width: 85mm;
-        padding: 8mm;
+        padding: 7mm;
       }
-      .acoes { display: none !important; }
+
+      body.print-1 #printArea4 { display: none !important; }
+
+      body.print-4 #cola { display: none !important; }
+      body.print-4 #printArea4 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 5mm;
+        width: 100%;
+        min-height: 275mm;
+        align-items: start;
+      }
+
+      body.print-4 #printArea4 .cola {
+        display: block !important;
+        margin: 0;
+        width: 100%;
+        height: auto;
+        border: 1px dashed #000;
+        border-radius: 0;
+        padding: 5mm;
+        box-shadow: none;
+      }
+
+      body.print-4 #printArea4 .cola h2 { font-size: 17px; margin-bottom: 2px; }
+      body.print-4 #printArea4 .cola .sub { font-size: 10px; margin-bottom: 7px; }
+      body.print-4 #printArea4 .linha-cola { padding: 6px 0; }
+      body.print-4 #printArea4 .cargo { font-size: 10px; }
+      body.print-4 #printArea4 .numero { font-size: 19px; letter-spacing: 2px; }
+      body.print-4 #printArea4 .nome-cola { font-size: 11px; }
+      body.print-4 #printArea4 .partido-cola { font-size: 9px; }
+      body.print-4 #printArea4 .mini-foto { width: 31px; min-width: 31px; height: 39px; }
+      body.print-4 #printArea4 .data-cola { font-size: 8px; margin-top: 5px; padding-top: 4px; }
+
       .numero { font-size: 22px; }
       .nome-cola { font-size: 13px; }
-      @page { margin: 12mm; }
+      .data-cola { color: #666; }
     }
   </style>
 </head>
@@ -556,15 +610,21 @@
         </div>
       </div>
 
+      <div class="data-cola" id="dataCola"></div>
+
       <div class="acoes" style="margin-top:14px">
-        <button class="principal" id="imprimir" type="button">Imprimir cola</button>
+        <button class="principal" id="imprimir1" type="button">Imprimir 1 cola</button>
+        <button class="principal" id="imprimir4" type="button">Imprimir 4 por folha</button>
         <button class="principal" id="compartilhar" type="button">Compartilhar cola</button>
         <button class="secundario" id="editar" type="button">Editar números</button>
       </div>
     </section>
 
+    <div id="printArea4" aria-hidden="true"></div>
+
     <div class="rodape">
       A sequência segue a ordem oficial de votação das Eleições 2026. Confira candidaturas nos canais oficiais da Justiça Eleitoral.
+      <div class="autor">Desenvolvido por Caubí Torres • Ferramenta independente, sem indicação ou recomendação de candidaturas.</div>
     </div>
   </main>
 
@@ -741,11 +801,12 @@
     document.getElementById('gerar').addEventListener('click',()=>{
       if(!validar()) return;
       campos.forEach(preencherLinhaCola);
+      atualizarDataCola();
       const cola=document.getElementById('cola'); cola.style.display='block'; cola.scrollIntoView({behavior:'smooth',block:'start'});
     });
 
     document.getElementById('limpar').addEventListener('click',()=>{
-      document.getElementById('uf').value='';
+      document.getElementById('uf').value='RN';
       campos.forEach(c=>{
         const input=document.getElementById(c.id); input.value=''; input.classList.remove('erro'); input.nextElementSibling.style.display='none';
         const p=document.getElementById(c.previewId); p.className='preview'; p.innerHTML='';
@@ -753,7 +814,46 @@
       document.getElementById('cola').style.display='none';
     });
 
-    document.getElementById('imprimir').addEventListener('click',()=>window.print());
+    function formatarDataHoje(){
+      return new Intl.DateTimeFormat('pt-BR').format(new Date());
+    }
+
+    function atualizarDataCola(){
+      document.getElementById('dataCola').textContent = formatarDataHoje();
+    }
+
+    function limparModoImpressao(){
+      document.body.classList.remove('print-1','print-4');
+      document.getElementById('printArea4').innerHTML='';
+    }
+
+    function imprimirUma(){
+      atualizarDataCola();
+      limparModoImpressao();
+      document.body.classList.add('print-1');
+      window.print();
+    }
+
+    function imprimirQuatro(){
+      atualizarDataCola();
+      limparModoImpressao();
+      const original=document.getElementById('cola');
+      const area=document.getElementById('printArea4');
+      for(let i=0;i<4;i++){
+        const copia=original.cloneNode(true);
+        copia.removeAttribute('id');
+        copia.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
+        const acoes=copia.querySelector('.acoes');
+        if(acoes) acoes.remove();
+        area.appendChild(copia);
+      }
+      document.body.classList.add('print-4');
+      window.print();
+    }
+
+    document.getElementById('imprimir1').addEventListener('click',imprimirUma);
+    document.getElementById('imprimir4').addEventListener('click',imprimirQuatro);
+    window.addEventListener('afterprint', limparModoImpressao);
 
     document.getElementById('compartilhar').addEventListener('click',async()=>{
       const linhas=campos.map(c=>{
@@ -762,7 +862,7 @@
         const nome=cand && !cand.tipo && cand.nome ? ` — ${cand.nome}` : '';
         return `${c.titulo}: ${numero}${nome}`;
       });
-      const texto=['Minha Cola Eleitoral 2026','',...linhas,'','Confira os dados das candidaturas nos canais oficiais da Justiça Eleitoral.'].join('\n');
+      const texto=['Cola Eleitoral 2026','',...linhas,'','Esta ferramenta não indica ou recomenda candidaturas. Confira os dados nos canais oficiais da Justiça Eleitoral.'].join('\n');
       try{
         if(navigator.share) await navigator.share({title:'Minha Cola Eleitoral 2026',text:texto});
         else if(navigator.clipboard){ await navigator.clipboard.writeText(texto); alert('Cola copiada. Agora você pode colar em outro aplicativo.'); }
