@@ -389,7 +389,7 @@
       .wrap { max-width: 100%; padding: 0; }
       .topo, .aviso, .base-card, .form-card, .rodape { display: none !important; }
       .acoes { display: none !important; }
-      @page { size: A4 portrait; margin: 6mm; }
+      @page { size: A4 portrait; margin: 7mm; }
 
       body.print-1 #cola {
         display: block !important;
@@ -398,6 +398,7 @@
         border-radius: 0;
         width: 85mm;
         padding: 7mm;
+        box-shadow: none;
       }
 
       body.print-1 #printArea4 { display: none !important; }
@@ -406,13 +407,11 @@
       body.print-4 #printArea4 {
         display: grid !important;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: repeat(2, minmax(0, 1fr));
-        gap: 2mm;
+        grid-auto-rows: auto;
+        gap: 3mm;
         width: 100%;
-        height: 278mm;
-        max-height: 278mm;
-        align-items: stretch;
-        overflow: hidden;
+        height: auto;
+        align-content: start;
         break-inside: avoid;
         page-break-inside: avoid;
       }
@@ -421,29 +420,45 @@
         display: block !important;
         margin: 0;
         width: 100%;
-        height: 100%;
+        height: auto;
         min-height: 0;
         border: 1px dashed #000;
         border-radius: 0;
-        padding: 3.5mm;
+        padding: 4mm;
         box-shadow: none;
-        overflow: hidden;
+        overflow: visible;
         break-inside: avoid;
         page-break-inside: avoid;
       }
 
-      body.print-4 #printArea4 .cola h2 { font-size: 16px; margin: 0 0 1px; }
-      body.print-4 #printArea4 .cola .sub { font-size: 9px; margin-bottom: 3px; }
-      body.print-4 #printArea4 .linha-cola { padding: 2.5px 0; gap: 1px; }
+      body.print-4 #printArea4 .cola h2 {
+        font-size: 16px;
+        margin: 0 0 1px;
+        line-height: 1.1;
+      }
+      body.print-4 #printArea4 .cola .sub {
+        font-size: 9px;
+        margin-bottom: 4px;
+        line-height: 1.1;
+      }
+      body.print-4 #printArea4 .linha-cola {
+        padding: 3px 0;
+        gap: 1px;
+      }
       body.print-4 #printArea4 .linha-principal { gap: 6px; }
-      body.print-4 #printArea4 .cargo { font-size: 9px; }
-      body.print-4 #printArea4 .numero { font-size: 18px; letter-spacing: 2px; }
+      body.print-4 #printArea4 .cargo { font-size: 9px; line-height: 1.1; }
+      body.print-4 #printArea4 .numero { font-size: 19px; letter-spacing: 2px; line-height: 1; }
       body.print-4 #printArea4 .nome-cola { font-size: 10px; line-height: 1.15; margin-top: 1px; }
-      body.print-4 #printArea4 .partido-cola { font-size: 8px; margin-top: 1px; }
-      body.print-4 #printArea4 .mini-foto { width: 27px; min-width: 27px; height: 34px; }
+      body.print-4 #printArea4 .partido-cola { font-size: 8px; margin-top: 1px; line-height: 1.1; }
+      body.print-4 #printArea4 .mini-foto {
+        width: 28px;
+        min-width: 28px;
+        height: 35px;
+      }
 
-      .numero { font-size: 22px; }
-      .nome-cola { font-size: 13px; }
+      body.print-1 .numero { font-size: 22px; }
+      body.print-1 .nome-cola { font-size: 13px; }
+    }
   </style>
 </head>
 <body>
@@ -453,35 +468,18 @@
       <p>Digite os números e confira nome e foto da candidatura antes de gerar a cola.</p>
     </header>
 
-    <div class="aviso">
-      Esta ferramenta apenas organiza e confere os números informados por você. Ela não recomenda candidaturas e não salva suas escolhas.
+    <div class="aviso" style="padding:10px 14px; margin-bottom:12px;">
+      Organize seus números para votar. Ferramenta neutra: não indica nem recomenda candidaturas.
     </div>
-
-    <section class="base-card">
-      <h2>Sobre a Cola Eleitoral</h2>
-      <p>
-        A Cola Eleitoral 2026 foi criada para ajudar o eleitor a organizar, conferir e lembrar os números de suas escolhas antes de votar. A ferramenta não indica, recomenda ou pede voto para nenhuma candidatura. O autor da página não participa da escolha do usuário e não se responsabiliza pelas candidaturas selecionadas. Antes de votar, confira os dados nos canais oficiais da Justiça Eleitoral.
-      </p>
-
-      <div id="statusBase" class="status-base">
-        <strong>Atualizando dados das candidaturas...</strong>
-        Aguarde um instante.
-      </div>
-    </section>
 
     <section class="form-card">
       <h2>Preencha sua cola</h2>
-      <p style="margin-bottom:14px">
-        Esta versão reúne as candidaturas do <strong>Rio Grande do Norte</strong> e as candidaturas à Presidência da República.
-      </p>
-
-      <div class="campo">
-        <label>Estado</label>
-        <div style="min-height:54px;border:1px solid var(--line);border-radius:11px;padding:14px;font-size:18px;font-weight:700;background:#f8fafb;display:flex;align-items:center;">
-          Rio Grande do Norte
-        </div>
-      </div>
+      <p style="margin:0 0 8px;color:var(--muted);font-size:13px;">Rio Grande do Norte • Eleições 2026</p>
       <input id="uf" type="hidden" value="RN" />
+
+      <div id="statusBase" class="status-base" style="margin:0 0 12px;padding:8px 10px;font-size:12px;">
+        Atualizando dados das candidaturas...
+      </div>
 
       <div class="campo">
         <label for="depFederal">Deputado Federal <span class="digitos">4 dígitos</span></label>
@@ -657,7 +655,13 @@
     }
 
     function atualizarStatusBase(titulo,texto){
-      document.getElementById('statusBase').innerHTML = `<strong>${titulo}</strong>${texto}`;
+      const box = document.getElementById('statusBase');
+      if (titulo === 'Base carregada') {
+        box.style.display = 'none';
+        return;
+      }
+      box.style.display = 'block';
+      box.innerHTML = `<strong>${titulo}</strong>${texto}`;
     }
 
     function corrigirUrlFoto(url){
@@ -846,7 +850,7 @@
         const nome=cand && !cand.tipo && cand.nome ? ` — ${cand.nome}` : '';
         return `${c.titulo}: ${numero}${nome}`;
       });
-      const texto=['Cola Eleitoral 2026','',...linhas,'','Esta ferramenta não indica ou recomenda candidaturas. Confira os dados nos canais oficiais da Justiça Eleitoral.'].join('\n');
+      const texto=['Cola Eleitoral 2026','',...linhas].join('\n');
       try{
         if(navigator.share) await navigator.share({title:'Minha Cola Eleitoral 2026',text:texto});
         else if(navigator.clipboard){ await navigator.clipboard.writeText(texto); alert('Cola copiada. Agora você pode colar em outro aplicativo.'); }
