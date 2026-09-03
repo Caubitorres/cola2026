@@ -613,7 +613,7 @@
       <div class="acoes" style="margin-top:14px">
         <button class="principal" id="imprimir1" type="button">Imprimir 1 cola</button>
         <button class="principal" id="imprimir4" type="button">Imprimir 4 por folha</button>
-        <button class="principal" id="gerarStory" type="button">Gerar arte story</button>
+        <button class="principal" id="compartilharImagem" type="button">Gerar e compartilhar story</button>
         <button class="secundario" id="editar" type="button">Editar números</button>
       </div>
     </section>
@@ -639,6 +639,10 @@
     let candidatos = [];
     let indice = new Map();
     let basePronta = false;
+
+    // Depois de publicar o Cloudflare Worker, cole aqui a URL dele SEM barra no final.
+    // Exemplo: https://cola2026-fotos.seunome.workers.dev
+    const FOTO_PROXY_BASE = 'https://cola2026-fotos.caubitorres.workers.dev';
 
     const soDigitos = v => (v || '').toString().replace(/\D/g,'');
     const normalizarUF = v => (v || '').toString().trim().toUpperCase();
@@ -692,6 +696,7 @@
           nome: normalizarTexto(item.nomeUrna || item.nome || item.candidato),
           partido: normalizarTexto(item.partido || item.siglaPartido),
           foto: corrigirUrlFoto(normalizarTexto(item.foto || item.fotoUrl || item.urlFoto)),
+          sqCandidato: normalizarTexto(item.sqCandidato || item.SQ_CANDIDATO || item.sq_candidato),
           vice: normalizarTexto(item.vice || item.nomeVice),
           situacao: normalizarTexto(item.situacao || item.situacaoCandidatura)
         });
@@ -857,7 +862,9 @@
           numero,
           nome: cand && !cand.tipo ? (cand.nome || '') : '',
           partido: cand && !cand.tipo ? (cand.partido || '') : '',
-          foto: cand && !cand.tipo ? (cand.foto || '') : ''
+          foto: cand && !cand.tipo ? (cand.foto || '') : '',
+          sqCandidato: cand && !cand.tipo ? (cand.sqCandidato || '') : '',
+          uf: cand && !cand.tipo ? (cand.uf || (cfg.usaUF ? 'RN' : 'BR')) : (cfg.usaUF ? 'RN' : 'BR')
         };
       });
     }
@@ -901,13 +908,18 @@
       });
     }
 
-    async function carregarFotoSegura(url){
-      if(!url) return null;
+    async function carregarFotoSegura(item){
+      if(!item) return null;
+      const proxyConfigurado = FOTO_PROXY_BASE && !FOTO_PROXY_BASE.includes('COLE_AQUI');
+      const tentativas = [];
 
-      const tentativas = [
-        url,
-        `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=220&h=280&fit=cover&output=jpg`
-      ];
+      if(proxyConfigurado && item.sqCandidato){
+        const ufFoto = (item.uf || 'RN').toUpperCase() === 'BR' ? 'BR' : 'RN';
+        tentativas.push(`${FOTO_PROXY_BASE}?candidato=${encodeURIComponent(item.sqCandidato)}&uf=${encodeURIComponent(ufFoto)}`);
+      }
+
+      // Mantém a URL direta apenas como tentativa secundária.
+      if(item.foto) tentativas.push(item.foto);
 
       for(const endereco of tentativas){
         try{
@@ -934,175 +946,134 @@
       return (partes[0][0] + (partes[1] ? partes[1][0] : '')).toUpperCase();
     }
 
-    function obterItensStory(){
-      return campos.map(cfg => {
-        const numero = document.getElementById(cfg.id).value;
-        const cand = procurarCandidato(cfg);
-        return {
-          titulo: cfg.titulo,
-          numero,
-          nome: cand && !cand.tipo ? (cand.nome || '') : '',
-          partido: cand && !cand.tipo ? (cand.partido || '') : '',
-          uf: cand && !cand.tipo ? (cand.uf || '') : '',
-          foto: cand && !cand.tipo ? (cand.foto || '') : ''
-        };
-      });
-    }
-
-    function escaparHtml(str){
-      return String(str || '').replace(/[&<>"]/g, function(ch){
-        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];
-      });
-    }
-
-    function obterIniciaisStory(texto){
-      const partes = String(texto || '').trim().split(/\s+/).filter(Boolean).slice(0,2);
-      return (partes.map(p => p[0]).join('') || '?').toUpperCase();
-    }
-
-    function gerarCardStory(item){
-      const meta = [item.partido || '', item.titulo === 'Presidente' ? '' : 'RN'].filter(Boolean).join(' • ');
-      const iniciais = obterIniciaisStory(item.nome || item.titulo);
-      const fotoHtml = item.foto
-        ? `<img src="${escaparHtml(item.foto)}" alt="Foto de ${escaparHtml(item.nome)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-          + `<div class="story-avatar-fallback" style="display:none">${escaparHtml(iniciais)}</div>`
-        : `<div class="story-avatar-fallback">${escaparHtml(iniciais)}</div>`;
-
-      return `
-        <section class="story-card">
-          <div class="story-cargo">${escaparHtml(item.titulo)}</div>
-          <div class="story-linha">
-            <div class="story-foto">${fotoHtml}</div>
-            <div class="story-info">
-              <div class="story-numero">${escaparHtml(item.numero)}</div>
-              <div class="story-nome">${escaparHtml(item.nome || 'Candidatura não localizada')}</div>
-              <div class="story-meta">${escaparHtml(meta)}</div>
-            </div>
-          </div>
-        </section>`;
-    }
-
-    function montarHtmlStory(itens){
-      const cards = itens.map(gerarCardStory).join('');
-      return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arte Story da Cola Eleitoral 2026</title>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"><\/script>
-<style>
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#dfe8e2;color:#111}
-  .story-wrap{width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:18px}
-  .story-actions{width:min(100%,420px);display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
-  .story-btn{border:0;border-radius:999px;padding:10px 16px;background:#1f6f43;color:#fff;font-weight:700;font-size:14px;cursor:pointer}
-  .story-btn.sec{background:#e9ecef;color:#222}
-  .story-hint{width:min(100%,420px);text-align:center;color:#4e5a5c;font-size:13px;line-height:1.35;margin-bottom:12px}
-  .story-canvas{position:relative;width:min(100%,420px);aspect-ratio:9/16;background:linear-gradient(180deg,#f4f8f5 0%, #e3ece6 100%);border-radius:26px;overflow:hidden;box-shadow:0 12px 36px rgba(0,0,0,.12);padding:18px 16px 18px}
-  .story-canvas:before,.story-canvas:after{content:'';position:absolute;border-radius:50%;background:rgba(31,111,67,.06);z-index:0}
-  .story-canvas:before{width:190px;height:190px;right:-55px;top:-25px}
-  .story-canvas:after{width:230px;height:230px;left:-95px;bottom:-80px}
-  .story-inner{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
-  .story-header{text-align:center;margin-bottom:12px}
-  .story-header h1{margin:0;font-size:28px;line-height:1.1}
-  .story-header p{margin:6px 0 0;color:#5a6668;font-size:14px}
-  .story-cards{display:flex;flex-direction:column;gap:10px;flex:1}
-  .story-card{background:rgba(255,255,255,.96);border:1px solid rgba(31,111,67,.08);border-radius:20px;padding:11px 12px}
-  .story-cargo{text-transform:uppercase;font-weight:800;font-size:11px;color:#5d6769;letter-spacing:.35px;margin-bottom:7px}
-  .story-linha{display:flex;gap:12px;align-items:center}
-  .story-foto{width:58px;min-width:58px;height:74px;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#e8eeea}
-  .story-foto img{width:100%;height:100%;object-fit:cover;display:block}
-  .story-avatar-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#2f6f56;color:#fff;font-size:24px;font-weight:800}
-  .story-info{min-width:0;flex:1}
-  .story-numero{font-size:29px;font-weight:900;line-height:1;letter-spacing:1px}
-  .story-nome{margin-top:3px;font-size:15px;font-weight:800;line-height:1.15}
-  .story-meta{margin-top:4px;font-size:12px;color:#535f61}
-  .story-footer{text-align:center;color:#5d696b;font-size:13px;padding-top:10px}
-  @media (max-width:500px){
-    .story-wrap{padding:10px}
-    .story-actions{width:100%}
-    .story-hint{width:100%}
-    .story-canvas{width:100%;border-radius:0;min-height:100vh;aspect-ratio:auto;padding:16px 12px}
-    .story-header h1{font-size:26px}
-    .story-numero{font-size:27px}
-    .story-nome{font-size:14px}
-  }
-  @media print{
-    body{background:#fff}
-    .story-actions,.story-hint{display:none!important}
-  }
-</style>
-<script>
-  async function baixarStory(){
-    const alvo = document.querySelector('.story-canvas');
-    const botoes = document.querySelector('.story-actions');
-    const dica = document.querySelector('.story-hint');
-    try{
-      if(botoes) botoes.style.display='none';
-      if(dica) dica.style.display='none';
-      const canvas = await html2canvas(alvo, {
-        backgroundColor: null,
-        scale: 3,
-        useCORS: true,
-        allowTaint: false,
-        logging: false,
-        width: alvo.offsetWidth,
-        height: alvo.offsetHeight
-      });
-      const link = document.createElement('a');
-      link.download = 'cola-eleitoral-story.png';
-      link.href = canvas.toDataURL('image/png');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }catch(e){
-      alert('Não foi possível salvar automaticamente. Faça um print desta tela para compartilhar.');
-    }finally{
-      if(botoes) botoes.style.display='flex';
-      if(dica) dica.style.display='block';
-    }
-  }
-<\/script>
-</head>
-<body>
-  <div class="story-wrap">
-    <div class="story-actions">
-      <button class="story-btn" onclick="baixarStory()">Salvar imagem</button>
-      <button class="story-btn sec" onclick="window.close()">Fechar</button>
-    </div>
-    <div class="story-hint">Arte no formato story. Toque em <strong>Salvar imagem</strong>. Se o navegador bloquear a exportação, faça um print da tela.</div>
-    <main class="story-canvas">
-      <div class="story-inner">
-        <header class="story-header">
-          <h1>Cola Eleitoral 2026</h1>
-          <p>Rio Grande do Norte</p>
-        </header>
-        <section class="story-cards">${cards}</section>
-        <footer class="story-footer">Organize seus números antes de votar.</footer>
-      </div>
-    </main>
-  </div>
-</body>
-</html>`;
-    }
-
-    function gerarStory(){
-      if(!validar()) return;
+    async function gerarImagemStoryBlob(){
+      if(!validar()) throw new Error('Preencha os números corretamente antes de compartilhar.');
       campos.forEach(preencherLinhaCola);
       document.getElementById('cola').style.display='block';
-      const itens = obterItensStory();
-      const popup = window.open('', '_blank');
-      if(!popup){
-        alert('Não foi possível abrir o story. Verifique se o navegador bloqueou a nova janela.');
-        return;
-      }
-      popup.document.open();
-      popup.document.write(montarHtmlStory(itens));
-      popup.document.close();
+
+      const itens = obterItensCola();
+      const fotos = await Promise.all(itens.map(item => carregarFotoSegura(item)));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createLinearGradient(0,0,1080,1920);
+      grad.addColorStop(0,'#f6faf7');
+      grad.addColorStop(1,'#e7efe9');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,0,1080,1920);
+
+      ctx.fillStyle = 'rgba(31,111,67,0.07)';
+      ctx.beginPath(); ctx.arc(920,130,180,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(150,1760,210,0,Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = '#171717';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 58px Arial';
+      ctx.fillText('Cola Eleitoral 2026', 540, 112);
+      ctx.fillStyle = '#536063';
+      ctx.font = '28px Arial';
+      ctx.fillText('Rio Grande do Norte', 540, 160);
+
+      const cardX = 64;
+      const cardW = 952;
+      const cardH = 220;
+      const gap = 14;
+      const startY = 205;
+
+      itens.forEach((item, i) => {
+        const y = startY + i * (cardH + gap);
+        desenharRoundedRect(ctx, cardX, y, cardW, cardH, 28, 'rgba(255,255,255,0.96)', 'rgba(31,111,67,0.12)');
+
+        ctx.fillStyle = '#5c6668';
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText(item.titulo.toUpperCase(), cardX + 28, y + 38);
+
+        const fotoX = cardX + 28;
+        const fotoY = y + 52;
+        const fotoW = 96;
+        const fotoH = 124;
+
+        if(fotos[i]){
+          ctx.save();
+          desenharRoundedRect(ctx, fotoX, fotoY, fotoW, fotoH, 18);
+          ctx.clip();
+          ctx.drawImage(fotos[i], fotoX, fotoY, fotoW, fotoH);
+          ctx.restore();
+          ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+          ctx.strokeRect(fotoX, fotoY, fotoW, fotoH);
+        }else{
+          desenharRoundedRect(ctx, fotoX, fotoY, fotoW, fotoH, 18, corAvatar(i));
+          ctx.fillStyle = '#fff';
+          ctx.textAlign = 'center';
+          ctx.font = 'bold 36px Arial';
+          ctx.fillText(iniciaisNome(item.nome || item.titulo), fotoX + fotoW/2, fotoY + 74);
+        }
+
+        const infoX = fotoX + fotoW + 24;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#111';
+        ctx.font = 'bold 54px Arial';
+        ctx.fillText(item.numero, infoX, y + 106);
+
+        ctx.fillStyle = '#1a1a1a';
+        ctx.font = 'bold 28px Arial';
+        const linhasNome = wrapText(ctx, item.nome || 'Candidatura não localizada', 680).slice(0,2);
+        ctx.fillText(linhasNome[0] || '', infoX, y + 142);
+        if(linhasNome[1]) ctx.fillText(linhasNome[1], infoX, y + 173);
+
+        ctx.fillStyle = '#4f5b5d';
+        ctx.font = '24px Arial';
+        const meta = [item.partido || '', item.titulo === 'Presidente' ? '' : 'RN'].filter(Boolean).join(' • ');
+        ctx.fillText(meta, infoX, y + 202);
+      });
+
+      ctx.fillStyle = '#617172';
+      ctx.textAlign = 'center';
+      ctx.font = '22px Arial';
+      ctx.fillText('Organize seus números antes de votar.', 540, 1815);
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      if(!blob) throw new Error('Não foi possível gerar a imagem.');
+      return blob;
     }
 
-    document.getElementById('gerarStory').addEventListener('click', gerarStory);
+    async function compartilharImagemCola(){
+      const btn = document.getElementById('compartilharImagem');
+      const textoOriginal = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Gerando imagem...';
+      try{
+        if(!FOTO_PROXY_BASE || FOTO_PROXY_BASE.includes('COLE_AQUI')){
+          throw new Error('A URL do Worker das fotos não está configurada corretamente.');
+        }
+        const blob = await gerarImagemStoryBlob();
+        const arquivo = new File([blob], 'cola-eleitoral-2026.png', { type:'image/png' });
+        if(navigator.canShare && navigator.canShare({ files:[arquivo] }) && navigator.share){
+          await navigator.share({ title:'Cola Eleitoral 2026', files:[arquivo] });
+        }else{
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'cola-eleitoral-2026.png';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          alert('Imagem gerada. Se o compartilhamento direto não abrir, a imagem foi baixada para você compartilhar.');
+        }
+      }catch(e){
+        if(e?.name !== 'AbortError') alert(e.message || 'Não foi possível gerar ou compartilhar a imagem agora.');
+      }finally{
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+      }
+    }
+
+    document.getElementById('compartilharImagem').addEventListener('click', compartilharImagemCola);
 
     document.getElementById('editar').addEventListener('click',()=>document.querySelector('.form-card').scrollIntoView({behavior:'smooth',block:'start'}));
 
