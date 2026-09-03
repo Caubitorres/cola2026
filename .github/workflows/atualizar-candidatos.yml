@@ -59,7 +59,7 @@ jobs:
           }
 
           # Identificador do pleito 2026 usado pelo DivulgaCandContas.
-          ID_ELEICAO_DIVULGACAND = '2062262026'
+          ID_ELEICAO_DIVULGACAND = '20322002026'
 
           registros = []
           vistos = set()
