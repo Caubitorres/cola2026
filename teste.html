@@ -613,7 +613,7 @@
       <div class="acoes" style="margin-top:14px">
         <button class="principal" id="imprimir1" type="button">Imprimir 1 cola</button>
         <button class="principal" id="imprimir4" type="button">Imprimir 4 por folha</button>
-        <button class="principal" id="gerarStory" type="button">Gerar story</button>
+        <button class="principal" id="gerarStory" type="button">Gerar arte story</button>
         <button class="secundario" id="editar" type="button">Editar números</button>
       </div>
     </section>
@@ -989,7 +989,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Story da Cola Eleitoral 2026</title>
+<title>Arte Story da Cola Eleitoral 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
   *{box-sizing:border-box}
   body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#dfe8e2;color:#111}
@@ -1030,19 +1031,47 @@
   @media print{
     body{background:#fff}
     .story-actions,.story-hint{display:none!important}
-    .story-wrap{padding:0}
-    .story-canvas{width:1080px;height:1920px;max-width:none;border-radius:0;box-shadow:none}
-    @page{size:1080px 1920px;margin:0}
   }
 </style>
+<script>
+  async function baixarStory(){
+    const alvo = document.querySelector('.story-canvas');
+    const botoes = document.querySelector('.story-actions');
+    const dica = document.querySelector('.story-hint');
+    try{
+      if(botoes) botoes.style.display='none';
+      if(dica) dica.style.display='none';
+      const canvas = await html2canvas(alvo, {
+        backgroundColor: null,
+        scale: 3,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        width: alvo.offsetWidth,
+        height: alvo.offsetHeight
+      });
+      const link = document.createElement('a');
+      link.download = 'cola-eleitoral-story.png';
+      link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }catch(e){
+      alert('Não foi possível salvar automaticamente. Faça um print desta tela para compartilhar.');
+    }finally{
+      if(botoes) botoes.style.display='flex';
+      if(dica) dica.style.display='block';
+    }
+  }
+</script>
 </head>
 <body>
   <div class="story-wrap">
     <div class="story-actions">
-      <button class="story-btn" onclick="window.print()">Imprimir / salvar</button>
+      <button class="story-btn" onclick="baixarStory()">Salvar imagem</button>
       <button class="story-btn sec" onclick="window.close()">Fechar</button>
     </div>
-    <div class="story-hint">Story pronto para print e compartilhamento.</div>
+    <div class="story-hint">Arte no formato story. Toque em <strong>Salvar imagem</strong>. Se o navegador bloquear a exportação, faça um print da tela.</div>
     <main class="story-canvas">
       <div class="story-inner">
         <header class="story-header">
