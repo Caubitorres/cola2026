@@ -398,7 +398,7 @@
       .wrap { max-width: 100%; padding: 0; }
       .topo, .aviso, .base-card, .form-card, .rodape { display: none !important; }
       .acoes { display: none !important; }
-      @page { size: A4 portrait; margin: 8mm; }
+      @page { size: A4 portrait; margin: 6mm; }
 
       body.print-1 #cola {
         display: block !important;
@@ -415,33 +415,42 @@
       body.print-4 #printArea4 {
         display: grid !important;
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        gap: 5mm;
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 3mm;
         width: 100%;
-        min-height: 275mm;
-        align-items: start;
+        height: 285mm;
+        max-height: 285mm;
+        align-items: stretch;
+        overflow: hidden;
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
 
       body.print-4 #printArea4 .cola {
         display: block !important;
         margin: 0;
         width: 100%;
-        height: auto;
+        height: 100%;
+        min-height: 0;
         border: 1px dashed #000;
         border-radius: 0;
-        padding: 5mm;
+        padding: 4mm;
         box-shadow: none;
+        overflow: hidden;
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
 
-      body.print-4 #printArea4 .cola h2 { font-size: 17px; margin-bottom: 2px; }
-      body.print-4 #printArea4 .cola .sub { font-size: 10px; margin-bottom: 7px; }
-      body.print-4 #printArea4 .linha-cola { padding: 6px 0; }
-      body.print-4 #printArea4 .cargo { font-size: 10px; }
-      body.print-4 #printArea4 .numero { font-size: 19px; letter-spacing: 2px; }
-      body.print-4 #printArea4 .nome-cola { font-size: 11px; }
-      body.print-4 #printArea4 .partido-cola { font-size: 9px; }
-      body.print-4 #printArea4 .mini-foto { width: 31px; min-width: 31px; height: 39px; }
-      body.print-4 #printArea4 .data-cola { font-size: 8px; margin-top: 5px; padding-top: 4px; }
+      body.print-4 #printArea4 .cola h2 { font-size: 16px; margin: 0 0 1px; }
+      body.print-4 #printArea4 .cola .sub { font-size: 9px; margin-bottom: 4px; }
+      body.print-4 #printArea4 .linha-cola { padding: 3px 0; gap: 2px; }
+      body.print-4 #printArea4 .linha-principal { gap: 6px; }
+      body.print-4 #printArea4 .cargo { font-size: 9px; }
+      body.print-4 #printArea4 .numero { font-size: 18px; letter-spacing: 2px; }
+      body.print-4 #printArea4 .nome-cola { font-size: 10px; line-height: 1.15; margin-top: 1px; }
+      body.print-4 #printArea4 .partido-cola { font-size: 8px; margin-top: 1px; }
+      body.print-4 #printArea4 .mini-foto { width: 27px; min-width: 27px; height: 34px; }
+      body.print-4 #printArea4 .data-cola { font-size: 7px; margin-top: 3px; padding-top: 3px; }
 
       .numero { font-size: 22px; }
       .nome-cola { font-size: 13px; }
