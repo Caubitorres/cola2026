@@ -1,0 +1,63 @@
+name: Atualizar candidatos 2026
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 00h, 06h, 12h e 18h no horário de Brasília (cron usa UTC)
+    - cron: '0 3,9,15,21 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atualizar-candidatos-2026
+  cancel-in-progress: true
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Baixar dados oficiais do TSE
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp_tse
+
+          curl --fail --location --retry 5 --retry-delay 10 \
+            -o .tmp_tse/consulta_cand_2026.zip \
+            'https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2026.zip'
+
+          curl --fail --location --retry 5 --retry-delay 10 \
+            -o .tmp_tse/foto_cand2026_RN_div.zip \
+            'https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/fotos/foto_cand2026_RN_div.zip'
+
+          curl --fail --location --retry 5 --retry-delay 10 \
+            -o .tmp_tse/foto_cand2026_BR_div.zip \
+            'https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/fotos/foto_cand2026_BR_div.zip'
+
+      - name: Gerar base usada pela página
+        run: python scripts/atualizar_tse.py
+
+      - name: Publicar alterações no repositório
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- dados/candidatos-2026.json fotos/; then
+            echo 'Nenhuma alteração nos dados.'
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dados/candidatos-2026.json fotos/
+          git commit -m 'Atualiza base oficial de candidatos 2026'
+          git push
