@@ -26,23 +26,103 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Descobrir links atuais no catálogo do TSE
+        id: tse
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          api = 'https://dadosabertos.tse.jus.br/api/3/action/package_show?id=candidatos-2026'
+          req = urllib.request.Request(
+              api,
+              headers={
+                  'User-Agent': 'Mozilla/5.0 GitHubActions/1.0',
+                  'Accept': 'application/json,text/plain,*/*',
+                  'Referer': 'https://dadosabertos.tse.jus.br/pt_BR/dataset/candidatos-2026',
+              },
+          )
+
+          with urllib.request.urlopen(req, timeout=60) as r:
+              payload = json.load(r)
+
+          if not payload.get('success'):
+              raise SystemExit('A API do TSE respondeu sem success=true')
+
+          resources = payload['result']['resources']
+
+          def find_resource(exact_name):
+              exact_name_lower = exact_name.casefold()
+              for res in resources:
+                  if (res.get('name') or '').strip().casefold() == exact_name_lower:
+                      return res
+              # fallback por trecho do nome
+              for res in resources:
+                  if exact_name_lower in (res.get('name') or '').strip().casefold():
+                      return res
+              raise SystemExit(f'Recurso não encontrado no catálogo: {exact_name}')
+
+          cand = find_resource('Candidatos')
+          rn = find_resource('RN - Fotos de candidatos')
+          br = find_resource('BR - Fotos de candidatos')
+
+          for label, res in [('CAND', cand), ('RN', rn), ('BR', br)]:
+              print(f"{label}: {res.get('name')} -> {res.get('url')}")
+
+          out = os.environ['GITHUB_OUTPUT']
+          with open(out, 'a', encoding='utf-8') as f:
+              f.write(f"candidatos_url={cand['url']}\n")
+              f.write(f"rn_fotos_url={rn['url']}\n")
+              f.write(f"br_fotos_url={br['url']}\n")
+          PY
+
       - name: Baixar dados oficiais do TSE
         shell: bash
+        env:
+          CANDIDATOS_URL: ${{ steps.tse.outputs.candidatos_url }}
+          RN_FOTOS_URL: ${{ steps.tse.outputs.rn_fotos_url }}
+          BR_FOTOS_URL: ${{ steps.tse.outputs.br_fotos_url }}
         run: |
           set -euo pipefail
           mkdir -p .tmp_tse
 
-          curl --fail --location --retry 5 --retry-delay 10 \
-            -o .tmp_tse/consulta_cand_2026.zip \
-            'https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2026.zip'
+          baixar() {
+            local url="$1"
+            local destino="$2"
+            echo "Baixando: $url"
+            curl --fail-with-body --location \
+              --retry 4 --retry-all-errors --retry-delay 5 \
+              --connect-timeout 30 --max-time 300 \
+              -A 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
+              -H 'Accept: */*' \
+              -H 'Referer: https://dadosabertos.tse.jus.br/pt_BR/dataset/candidatos-2026' \
+              -o "$destino" "$url"
+          }
 
-          curl --fail --location --retry 5 --retry-delay 10 \
-            -o .tmp_tse/foto_cand2026_RN_div.zip \
-            'https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/fotos/foto_cand2026_RN_div.zip'
+          baixar "$CANDIDATOS_URL" '.tmp_tse/consulta_cand_2026.zip'
+          baixar "$RN_FOTOS_URL" '.tmp_tse/foto_cand2026_RN_div.zip'
+          baixar "$BR_FOTOS_URL" '.tmp_tse/foto_cand2026_BR_div.zip'
 
-          curl --fail --location --retry 5 --retry-delay 10 \
-            -o .tmp_tse/foto_cand2026_BR_div.zip \
-            'https://cdn.tse.jus.br/estatistica/sead/eleicoes/eleicoes2026/fotos/foto_cand2026_BR_div.zip'
+          echo 'Arquivos recebidos:'
+          ls -lh .tmp_tse
+
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          arquivos = [
+              Path('.tmp_tse/consulta_cand_2026.zip'),
+              Path('.tmp_tse/foto_cand2026_RN_div.zip'),
+              Path('.tmp_tse/foto_cand2026_BR_div.zip'),
+          ]
+          for p in arquivos:
+              if not zipfile.is_zipfile(p):
+                  começo = p.read_bytes()[:200]
+                  raise SystemExit(f'{p} não é um ZIP válido. Primeiros bytes: {começo!r}')
+              print('ZIP válido:', p)
+          PY
 
       - name: Gerar base usada pela página
         run: python scripts/atualizar_tse.py
@@ -51,13 +131,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- dados/candidatos-2026.json fotos/; then
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          git add dados/candidatos-2026.json fotos/ || true
+
+          if git diff --cached --quiet; then
             echo 'Nenhuma alteração nos dados.'
             exit 0
           fi
 
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add dados/candidatos-2026.json fotos/
           git commit -m 'Atualiza base oficial de candidatos 2026'
           git push
