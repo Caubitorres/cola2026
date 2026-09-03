@@ -913,9 +913,9 @@
       const proxyConfigurado = FOTO_PROXY_BASE && !FOTO_PROXY_BASE.includes('COLE_AQUI');
       const tentativas = [];
 
-      if(proxyConfigurado && item.sqCandidato){
-        const ufFoto = (item.uf || 'RN').toUpperCase() === 'BR' ? 'BR' : 'RN';
-        tentativas.push(`${FOTO_PROXY_BASE}?candidato=${encodeURIComponent(item.sqCandidato)}&uf=${encodeURIComponent(ufFoto)}`);
+      // Usa como origem exatamente a URL da foto que já funciona na página.
+      if(proxyConfigurado && item.foto){
+        tentativas.push(`${FOTO_PROXY_BASE}?url=${encodeURIComponent(item.foto)}`);
       }
 
       // Mantém a URL direta apenas como tentativa secundária.
