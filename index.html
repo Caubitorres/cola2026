@@ -137,6 +137,11 @@
       color: #222;
     }
 
+    button:disabled {
+      opacity: .72;
+      cursor: wait;
+    }
+
     .campo {
       margin-bottom: 16px;
     }
@@ -608,7 +613,7 @@
       <div class="acoes" style="margin-top:14px">
         <button class="principal" id="imprimir1" type="button">Imprimir 1 cola</button>
         <button class="principal" id="imprimir4" type="button">Imprimir 4 por folha</button>
-        <button class="principal" id="compartilhar" type="button">Compartilhar cola</button>
+        <button class="principal" id="compartilharImagem" type="button">Compartilhar imagem</button>
         <button class="secundario" id="editar" type="button">Editar números</button>
       </div>
     </section>
@@ -843,20 +848,207 @@
     document.getElementById('imprimir4').addEventListener('click',imprimirQuatro);
     window.addEventListener('afterprint', limparModoImpressao);
 
-    document.getElementById('compartilhar').addEventListener('click',async()=>{
-      const linhas=campos.map(c=>{
-        const numero=document.getElementById(c.id).value;
-        const cand=procurarCandidato(c);
-        const nome=cand && !cand.tipo && cand.nome ? ` — ${cand.nome}` : '';
-        return `${c.titulo}: ${numero}${nome}`;
+    function obterItensCola(){
+      return campos.map(cfg => {
+        const numero = document.getElementById(cfg.id).value;
+        const cand = procurarCandidato(cfg);
+        return {
+          titulo: cfg.titulo,
+          numero,
+          nome: cand && !cand.tipo ? (cand.nome || '') : '',
+          partido: cand && !cand.tipo ? (cand.partido || '') : '',
+          foto: cand && !cand.tipo ? (cand.foto || '') : ''
+        };
       });
-      const texto=['Cola Eleitoral 2026','',...linhas].join('\n');
+    }
+
+    function wrapText(ctx, text, maxWidth){
+      const palavras = String(text || '').split(/\s+/).filter(Boolean);
+      const linhas = [];
+      let atual = '';
+      for(const palavra of palavras){
+        const teste = atual ? `${atual} ${palavra}` : palavra;
+        if(ctx.measureText(teste).width <= maxWidth || !atual){
+          atual = teste;
+        }else{
+          linhas.push(atual);
+          atual = palavra;
+        }
+      }
+      if(atual) linhas.push(atual);
+      return linhas;
+    }
+
+    function desenharRoundedRect(ctx,x,y,w,h,r,fill,stroke){
+      ctx.beginPath();
+      ctx.moveTo(x+r,y);
+      ctx.arcTo(x+w,y,x+w,y+h,r);
+      ctx.arcTo(x+w,y+h,x,y+h,r);
+      ctx.arcTo(x,y+h,x,y,r);
+      ctx.arcTo(x,y,x+w,y,r);
+      ctx.closePath();
+      if(fill){ ctx.fillStyle = fill; ctx.fill(); }
+      if(stroke){ ctx.strokeStyle = stroke; ctx.stroke(); }
+    }
+
+    async function blobParaImagem(blob){
+      return new Promise((resolve,reject)=>{
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = ()=>{ URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = (e)=>{ URL.revokeObjectURL(url); reject(e); };
+        img.src = url;
+      });
+    }
+
+    async function carregarFotoSegura(url){
+      if(!url) return null;
       try{
-        if(navigator.share) await navigator.share({title:'Minha Cola Eleitoral 2026',text:texto});
-        else if(navigator.clipboard){ await navigator.clipboard.writeText(texto); alert('Cola copiada. Agora você pode colar em outro aplicativo.'); }
-        else prompt('Copie sua cola:',texto);
-      }catch(e){ if(e?.name!=='AbortError') alert('Não foi possível compartilhar agora.'); }
-    });
+        const resposta = await fetch(url, { mode:'cors', cache:'force-cache' });
+        if(!resposta.ok) throw new Error('foto indisponível');
+        const blob = await resposta.blob();
+        return await blobParaImagem(blob);
+      }catch(e){
+        return null;
+      }
+    }
+
+    function corAvatar(indice){
+      const cores = ['#1f6f43','#264653','#8d5524','#6a4c93','#0f766e','#b45309'];
+      return cores[indice % cores.length];
+    }
+
+    function iniciaisNome(nome){
+      const partes = String(nome || '').trim().split(/\s+/).filter(Boolean);
+      if(!partes.length) return '?';
+      return (partes[0][0] + (partes[1] ? partes[1][0] : '')).toUpperCase();
+    }
+
+    async function gerarImagemStoryBlob(){
+      if(!validar()) throw new Error('Preencha os números corretamente antes de compartilhar.');
+      campos.forEach(preencherLinhaCola);
+      document.getElementById('cola').style.display='block';
+
+      const itens = obterItensCola();
+      const fotos = await Promise.all(itens.map(item => carregarFotoSegura(item.foto)));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createLinearGradient(0,0,1080,1920);
+      grad.addColorStop(0,'#f6faf7');
+      grad.addColorStop(1,'#e7efe9');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,0,1080,1920);
+
+      ctx.fillStyle = 'rgba(31,111,67,0.07)';
+      ctx.beginPath(); ctx.arc(920,130,180,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(150,1760,210,0,Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = '#171717';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 58px Arial';
+      ctx.fillText('Cola Eleitoral 2026', 540, 112);
+      ctx.fillStyle = '#536063';
+      ctx.font = '28px Arial';
+      ctx.fillText('Rio Grande do Norte • Story para compartilhamento', 540, 160);
+
+      const cardX = 64;
+      const cardW = 952;
+      const cardH = 232;
+      const gap = 18;
+      const startY = 210;
+
+      itens.forEach((item, i) => {
+        const y = startY + i * (cardH + gap);
+        desenharRoundedRect(ctx, cardX, y, cardW, cardH, 28, 'rgba(255,255,255,0.96)', 'rgba(31,111,67,0.12)');
+
+        ctx.fillStyle = '#5c6668';
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText(item.titulo.toUpperCase(), cardX + 28, y + 38);
+
+        const fotoX = cardX + 28;
+        const fotoY = y + 58;
+        const fotoW = 96;
+        const fotoH = 122;
+
+        if(fotos[i]){
+          ctx.save();
+          desenharRoundedRect(ctx, fotoX, fotoY, fotoW, fotoH, 18);
+          ctx.clip();
+          ctx.drawImage(fotos[i], fotoX, fotoY, fotoW, fotoH);
+          ctx.restore();
+          ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+          ctx.strokeRect(fotoX, fotoY, fotoW, fotoH);
+        }else{
+          desenharRoundedRect(ctx, fotoX, fotoY, fotoW, fotoH, 18, corAvatar(i));
+          ctx.fillStyle = '#fff';
+          ctx.textAlign = 'center';
+          ctx.font = 'bold 36px Arial';
+          ctx.fillText(iniciaisNome(item.nome || item.titulo), fotoX + fotoW/2, fotoY + 74);
+        }
+
+        const infoX = fotoX + fotoW + 24;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#111';
+        ctx.font = 'bold 54px Arial';
+        ctx.fillText(item.numero, infoX, y + 115);
+
+        ctx.fillStyle = '#1a1a1a';
+        ctx.font = 'bold 28px Arial';
+        const linhasNome = wrapText(ctx, item.nome || 'Candidatura não localizada', 680).slice(0,2);
+        ctx.fillText(linhasNome[0] || '', infoX, y + 150);
+        if(linhasNome[1]) ctx.fillText(linhasNome[1], infoX, y + 182);
+
+        ctx.fillStyle = '#4f5b5d';
+        ctx.font = '24px Arial';
+        const meta = [item.partido || '', item.titulo === 'Presidente' ? '' : 'RN'].filter(Boolean).join(' • ');
+        ctx.fillText(meta, infoX, y + 208);
+      });
+
+      ctx.fillStyle = '#617172';
+      ctx.textAlign = 'center';
+      ctx.font = '22px Arial';
+      ctx.fillText('Organize seus números antes de votar.', 540, 1870);
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      if(!blob) throw new Error('Não foi possível gerar a imagem.');
+      return blob;
+    }
+
+    async function compartilharImagemCola(){
+      const btn = document.getElementById('compartilharImagem');
+      const textoOriginal = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Gerando imagem...';
+      try{
+        const blob = await gerarImagemStoryBlob();
+        const arquivo = new File([blob], 'cola-eleitoral-2026.png', { type:'image/png' });
+        if(navigator.canShare && navigator.canShare({ files:[arquivo] }) && navigator.share){
+          await navigator.share({ title:'Cola Eleitoral 2026', files:[arquivo] });
+        }else{
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'cola-eleitoral-2026.png';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          alert('Imagem gerada. Se o compartilhamento direto não abrir, a imagem foi baixada para você compartilhar.');
+        }
+      }catch(e){
+        if(e?.name !== 'AbortError') alert(e.message || 'Não foi possível gerar ou compartilhar a imagem agora.');
+      }finally{
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+      }
+    }
+
+    document.getElementById('compartilharImagem').addEventListener('click', compartilharImagemCola);
 
     document.getElementById('editar').addEventListener('click',()=>document.querySelector('.form-card').scrollIntoView({behavior:'smooth',block:'start'}));
 
