@@ -573,6 +573,14 @@
       text-align: left;
     }
 
+
+    .orientacao-campos {
+      margin: -2px 0 8px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
 </style>
 </head>
 <body>
@@ -588,6 +596,7 @@
 
     <section class="form-card">
       <h2>Preencha sua cola</h2>
+        <p class="orientacao-campos">Digite o número ou o nome do candidato.</p>
       <p style="margin:0 0 8px;color:var(--muted);font-size:13px;">Rio Grande do Norte • Eleições 2026</p>
       <input id="uf" type="hidden" value="RN" />
 
@@ -597,42 +606,42 @@
 
       <div class="campo">
         <label for="depFederal">Deputado Federal <span class="digitos">4 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="depFederal" autocomplete="off" aria-label="Número para Deputado Federal"  placeholder="Digite o número ou nome">
+        <div class="campo-com-sugestoes"><input id="depFederal" autocomplete="off" aria-label="Número para Deputado Federal">
         <div class="erro-texto">Informe exatamente 4 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-depFederal"></div></div>
         <div id="previewDepFederal" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="depEstadual">Deputado Estadual <span class="digitos">5 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="depEstadual" autocomplete="off" aria-label="Número para Deputado Estadual"  placeholder="Digite o número ou nome">
+        <div class="campo-com-sugestoes"><input id="depEstadual" autocomplete="off" aria-label="Número para Deputado Estadual">
         <div class="erro-texto">Informe exatamente 5 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-depEstadual"></div></div>
         <div id="previewDepEstadual" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="senador1">Senador — 1ª vaga <span class="digitos">3 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="senador1" autocomplete="off" aria-label="Número para Senador primeira vaga"  placeholder="Digite o número ou nome">
+        <div class="campo-com-sugestoes"><input id="senador1" autocomplete="off" aria-label="Número para Senador primeira vaga">
         <div class="erro-texto">Informe exatamente 3 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-senador1"></div></div>
         <div id="previewSenador1" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="senador2">Senador — 2ª vaga <span class="digitos">3 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="senador2" autocomplete="off" aria-label="Número para Senador segunda vaga"  placeholder="Digite o número ou nome">
+        <div class="campo-com-sugestoes"><input id="senador2" autocomplete="off" aria-label="Número para Senador segunda vaga">
         <div class="erro-texto">Informe exatamente 3 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-senador2"></div></div>
         <div id="previewSenador2" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="governador">Governador <span class="digitos">2 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="governador" autocomplete="off" aria-label="Número para Governador"  placeholder="Digite o número ou nome">
+        <div class="campo-com-sugestoes"><input id="governador" autocomplete="off" aria-label="Número para Governador">
         <div class="erro-texto">Informe exatamente 2 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-governador"></div></div>
         <div id="previewGovernador" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="presidente">Presidente <span class="digitos">2 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="presidente" autocomplete="off" aria-label="Número para Presidente"  placeholder="Digite o número ou nome">
+        <div class="campo-com-sugestoes"><input id="presidente" autocomplete="off" aria-label="Número para Presidente">
         <div class="erro-texto">Informe exatamente 2 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-presidente"></div></div>
         <div id="previewPresidente" class="preview"></div>
       </div>
