@@ -575,42 +575,42 @@
 
       <div class="campo">
         <label for="depFederal">Deputado Federal <span class="digitos">4 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="depFederal" autocomplete="off" aria-label="Número para Deputado Federal" / placeholder="Número ou nome">
+        <div class="campo-com-sugestoes"><input id="depFederal" autocomplete="off" aria-label="Número para Deputado Federal"  placeholder="Número ou nome">
         <div class="erro-texto">Informe exatamente 4 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-depFederal"></div></div>
         <div id="previewDepFederal" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="depEstadual">Deputado Estadual <span class="digitos">5 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="depEstadual" autocomplete="off" aria-label="Número para Deputado Estadual" / placeholder="Número ou nome">
+        <div class="campo-com-sugestoes"><input id="depEstadual" autocomplete="off" aria-label="Número para Deputado Estadual"  placeholder="Número ou nome">
         <div class="erro-texto">Informe exatamente 5 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-depEstadual"></div></div>
         <div id="previewDepEstadual" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="senador1">Senador — 1ª vaga <span class="digitos">3 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="senador1" autocomplete="off" aria-label="Número para Senador primeira vaga" / placeholder="Número ou nome">
+        <div class="campo-com-sugestoes"><input id="senador1" autocomplete="off" aria-label="Número para Senador primeira vaga"  placeholder="Número ou nome">
         <div class="erro-texto">Informe exatamente 3 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-senador1"></div></div>
         <div id="previewSenador1" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="senador2">Senador — 2ª vaga <span class="digitos">3 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="senador2" autocomplete="off" aria-label="Número para Senador segunda vaga" / placeholder="Número ou nome">
+        <div class="campo-com-sugestoes"><input id="senador2" autocomplete="off" aria-label="Número para Senador segunda vaga"  placeholder="Número ou nome">
         <div class="erro-texto">Informe exatamente 3 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-senador2"></div></div>
         <div id="previewSenador2" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="governador">Governador <span class="digitos">2 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="governador" autocomplete="off" aria-label="Número para Governador" / placeholder="Número ou nome">
+        <div class="campo-com-sugestoes"><input id="governador" autocomplete="off" aria-label="Número para Governador"  placeholder="Número ou nome">
         <div class="erro-texto">Informe exatamente 2 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-governador"></div></div>
         <div id="previewGovernador" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="presidente">Presidente <span class="digitos">2 dígitos</span></label>
-        <div class="campo-com-sugestoes"><input id="presidente" autocomplete="off" aria-label="Número para Presidente" / placeholder="Número ou nome">
+        <div class="campo-com-sugestoes"><input id="presidente" autocomplete="off" aria-label="Número para Presidente"  placeholder="Número ou nome">
         <div class="erro-texto">Informe exatamente 2 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-presidente"></div></div>
         <div id="previewPresidente" class="preview"></div>
       </div>
@@ -834,7 +834,16 @@
     function atualizarPreview(cfg){
       const input = document.getElementById(cfg.id);
       const preview = document.getElementById(cfg.previewId);
-      const numero = soDigitos(input.value).slice(0,cfg.len);
+      const valor = normalizarTexto(input.value);
+
+      // Enquanto houver letras, a pesquisa por nome cuida do campo.
+      if(/[a-zA-ZÀ-ÿ]/.test(valor)){
+        preview.className='preview';
+        preview.innerHTML='';
+        return;
+      }
+
+      const numero = soDigitos(valor).slice(0,cfg.len);
       input.value = numero;
 
       if(numero.length < cfg.len){ preview.className='preview'; preview.innerHTML=''; return; }
@@ -967,6 +976,21 @@
 
     document.addEventListener('click', (e) => {
       if(!e.target.closest('.campo-com-sugestoes')) fecharSugestoes();
+    });
+
+    campos.forEach(c=>{
+      const input=document.getElementById(c.id);
+      input.addEventListener('input',()=>{
+        input.classList.remove('erro');
+        const erro = input.parentElement.querySelector('.erro-texto');
+        if(erro) erro.style.display='none';
+
+        // Para números, limita ao tamanho do cargo. Para nomes, preserva o texto.
+        if(!/[a-zA-ZÀ-ÿ]/.test(input.value)){
+          input.value=soDigitos(input.value).slice(0,c.len);
+          atualizarPreview(c);
+        }
+      });
     });
 
     function atualizarTodosPreviews(){ campos.forEach(atualizarPreview); }
