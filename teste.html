@@ -640,10 +640,6 @@
     let indice = new Map();
     let basePronta = false;
 
-    // Depois de publicar o Cloudflare Worker, cole aqui a URL dele SEM barra no final.
-    // Exemplo: https://cola2026-fotos.seunome.workers.dev
-    const FOTO_PROXY_BASE = 'https://cola2026-fotos.caubitorres.workers.dev';
-
     const soDigitos = v => (v || '').toString().replace(/\D/g,'');
     const normalizarUF = v => (v || '').toString().trim().toUpperCase();
     const normalizarTexto = v => (v || '').toString().trim();
@@ -691,12 +687,17 @@
         if (cargo === 'presidente') uf = 'BR';
         if (!cargo || !numero || !uf) return;
 
+        const sqCandidato = normalizarTexto(item.sqCandidato || item.SQ_CANDIDATO || item.sq_candidato);
+        const fotoRemota = corrigirUrlFoto(normalizarTexto(item.foto || item.fotoUrl || item.urlFoto));
+        const fotoLocal = sqCandidato ? `./fotos/${encodeURIComponent(sqCandidato)}.jpg` : '';
+
         indice.set(chave(uf,cargo,numero), {
           cargo, numero, uf,
           nome: normalizarTexto(item.nomeUrna || item.nome || item.candidato),
           partido: normalizarTexto(item.partido || item.siglaPartido),
-          foto: corrigirUrlFoto(normalizarTexto(item.foto || item.fotoUrl || item.urlFoto)),
-          sqCandidato: normalizarTexto(item.sqCandidato || item.SQ_CANDIDATO || item.sq_candidato),
+          foto: fotoLocal || fotoRemota,
+          fotoRemota,
+          sqCandidato,
           vice: normalizarTexto(item.vice || item.nomeVice),
           situacao: normalizarTexto(item.situacao || item.situacaoCandidatura)
         });
@@ -735,7 +736,9 @@
 
     function previewHTMLCandidato(cfg,c){
       const meta = [`Número ${c.numero}`, c.partido, c.uf !== 'BR' ? c.uf : '', c.situacao].filter(Boolean).join(' • ');
-      const foto = c.foto ? `<img src="${c.foto}" alt="Foto de ${c.nome}" onerror="this.parentElement.innerHTML='<span>Foto indisponível</span>'">` : '<span>Sem foto</span>';
+      const foto = c.foto
+        ? `<img src="${c.foto}" alt="Foto de ${c.nome}" data-remota="${c.fotoRemota || ''}" onerror="if(this.dataset.remota && this.src !== this.dataset.remota){this.src=this.dataset.remota;this.dataset.remota='';}else{this.parentElement.innerHTML='<span>Foto indisponível</span>';}">`
+        : '<span>Sem foto</span>';
       const vice = c.vice ? `<div class="preview-meta">Vice: ${c.vice}</div>` : '';
       return `<div class="preview-foto">${foto}</div><div class="preview-info"><div class="preview-cargo">${cfg.titulo}</div><div class="preview-nome">${c.nome || 'Nome não informado'}</div><div class="preview-meta">${meta}</div>${vice}</div>`;
     }
@@ -792,7 +795,10 @@
       if(c && !c.tipo){
         nome.textContent=c.nome || 'Nome não informado';
         meta.textContent=[c.partido, cfg.usaUF && c.uf!=='BR' ? c.uf : ''].filter(Boolean).join(' • ');
-        if(c.foto){ foto.innerHTML=`<img src="${c.foto}" alt="Foto de ${c.nome}" onerror="this.parentElement.classList.remove('visivel')">`; foto.classList.add('visivel'); }
+        if(c.foto){
+          foto.innerHTML=`<img src="${c.foto}" alt="Foto de ${c.nome}" data-remota="${c.fotoRemota || ''}" onerror="if(this.dataset.remota && this.src !== this.dataset.remota){this.src=this.dataset.remota;this.dataset.remota='';}else{this.parentElement.classList.remove('visivel');}">`;
+          foto.classList.add('visivel');
+        }
       }else{
         nome.textContent=''; meta.textContent='';
       }
@@ -863,6 +869,7 @@
           nome: cand && !cand.tipo ? (cand.nome || '') : '',
           partido: cand && !cand.tipo ? (cand.partido || '') : '',
           foto: cand && !cand.tipo ? (cand.foto || '') : '',
+          fotoRemota: cand && !cand.tipo ? (cand.fotoRemota || '') : '',
           sqCandidato: cand && !cand.tipo ? (cand.sqCandidato || '') : '',
           uf: cand && !cand.tipo ? (cand.uf || (cfg.usaUF ? 'RN' : 'BR')) : (cfg.usaUF ? 'RN' : 'BR')
         };
@@ -910,20 +917,10 @@
 
     async function carregarFotoSegura(item){
       if(!item) return null;
-      const proxyConfigurado = FOTO_PROXY_BASE && !FOTO_PROXY_BASE.includes('COLE_AQUI');
-      const tentativas = [];
-
-      // Usa como origem exatamente a URL da foto que já funciona na página.
-      if(proxyConfigurado && item.foto){
-        tentativas.push(`${FOTO_PROXY_BASE}?url=${encodeURIComponent(item.foto)}`);
-      }
-
-      // Mantém a URL direta apenas como tentativa secundária.
-      if(item.foto) tentativas.push(item.foto);
-
+      const tentativas = [item.foto, item.fotoRemota].filter(Boolean);
       for(const endereco of tentativas){
         try{
-          const resposta = await fetch(endereco, { mode:'cors', cache:'force-cache' });
+          const resposta = await fetch(endereco, { cache:'force-cache' });
           if(!resposta.ok) continue;
           const blob = await resposta.blob();
           if(!blob.type.startsWith('image/')) continue;
@@ -1047,9 +1044,6 @@
       btn.disabled = true;
       btn.textContent = 'Gerando imagem...';
       try{
-        if(!FOTO_PROXY_BASE || FOTO_PROXY_BASE.includes('COLE_AQUI')){
-          throw new Error('A URL do Worker das fotos não está configurada corretamente.');
-        }
         const blob = await gerarImagemStoryBlob();
         const arquivo = new File([blob], 'cola-eleitoral-2026.png', { type:'image/png' });
         if(navigator.canShare && navigator.canShare({ files:[arquivo] }) && navigator.share){
