@@ -1028,16 +1028,6 @@
         nome.textContent=''; meta.textContent='';
       }
     }
-
-    campos.forEach(c=>{
-      const input=document.getElementById(c.id);
-      input.addEventListener('input',()=>{
-        input.value=soDigitos(input.value).slice(0,c.len);
-        input.classList.remove('erro'); input.nextElementSibling.style.display='none';
-        atualizarPreview(c);
-      });
-    });
-
     document.getElementById('gerar').addEventListener('click',()=>{
       if(!validar()) return;
       campos.forEach(preencherLinhaCola);
