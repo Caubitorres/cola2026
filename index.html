@@ -208,6 +208,93 @@
       line-height: 1.4;
     }
 
+
+    .campo-com-sugestoes {
+      position: relative;
+    }
+
+    .sugestoes-candidatos {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      z-index: 50;
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 12px 30px rgba(0,0,0,.12);
+    }
+
+    .sugestoes-candidatos.aberta { display: grid; gap: 6px; }
+
+    .resultado-candidato {
+      width: 100%;
+      min-height: 0;
+      padding: 8px;
+      display: grid;
+      grid-template-columns: 46px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      text-align: left;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 400;
+      cursor: pointer;
+    }
+
+    .resultado-candidato:hover { border-color: #a8c8b5; background:#f8faf9; }
+
+    .resultado-candidato img,
+    .resultado-sem-foto {
+      width: 46px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 7px;
+      background: #e9ecef;
+    }
+
+    .resultado-sem-foto {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .resultado-info strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+
+    .resultado-info span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .resultado-numero {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+
+    .resultado-vazio {
+      padding: 10px 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
     .preview {
       display: none;
       margin-top: 10px;
@@ -412,33 +499,34 @@
       body.print-4 #printArea4 {
         display: grid !important;
         grid-template-columns: 1fr 1fr;
-        grid-auto-rows: auto;
+        grid-template-rows: repeat(2, 1fr);
         gap: 3mm;
         width: 100%;
-        height: auto;
-        align-content: start;
+        height: 280mm;
+        align-content: stretch;
         break-inside: avoid;
         page-break-inside: avoid;
       }
 
       body.print-4 #printArea4 .cola {
-        display: block !important;
+        display: flex !important;
+        flex-direction: column;
         margin: 0;
         width: 100%;
-        height: auto;
+        height: 100%;
         min-height: 0;
         border: 1px dashed #000;
         border-radius: 0;
-        padding: 4mm;
+        padding: 5mm;
         box-shadow: none;
-        overflow: visible;
+        overflow: hidden;
         break-inside: avoid;
         page-break-inside: avoid;
       }
 
       body.print-4 #printArea4 .cola h2 {
-        font-size: 16px;
-        margin: 0 0 1px;
+        font-size: 17px;
+        margin: 0 0 2px;
         line-height: 1.1;
       }
       body.print-4 #printArea4 .cola .sub {
@@ -447,30 +535,64 @@
         line-height: 1.1;
       }
       body.print-4 #printArea4 .linha-cola {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         padding: 3px 0;
         gap: 1px;
       }
-      body.print-4 #printArea4 .linha-principal { gap: 6px; }
+      body.print-4 #printArea4 .linha-principal { gap: 7px; }
       body.print-4 #printArea4 .cargo { font-size: 9px; line-height: 1.1; }
-      body.print-4 #printArea4 .numero { font-size: 19px; letter-spacing: 2px; line-height: 1; }
+      body.print-4 #printArea4 .numero { font-size: 21px; letter-spacing: 2px; line-height: 1; }
       body.print-4 #printArea4 .nome-cola { font-size: 10px; line-height: 1.15; margin-top: 1px; }
       body.print-4 #printArea4 .partido-cola { font-size: 8px; margin-top: 1px; line-height: 1.1; }
       body.print-4 #printArea4 .mini-foto {
-        width: 28px;
-        min-width: 28px;
-        height: 35px;
+        width: 31px;
+        min-width: 31px;
+        height: 39px;
       }
 
       body.print-1 .numero { font-size: 22px; }
       body.print-1 .nome-cola { font-size: 13px; }
     }
-  </style>
+  
+    /* Ajuste visual dos campos de número/nome */
+    .campo-com-sugestoes input[type="text"],
+    .campo-com-sugestoes input[type="search"],
+    .campo-com-sugestoes input {
+      min-height: 48px;
+      padding: 10px 14px;
+      font-size: 17px;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-align: left;
+    }
+
+    .campo-com-sugestoes input::placeholder {
+      color: #7a7f85;
+      opacity: 1;
+      font-size: 17px;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-align: left;
+    }
+
+
+    .orientacao-campos {
+      margin: -2px 0 8px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+</style>
 </head>
 <body>
   <main class="wrap">
     <header class="topo">
       <h1>Cola Eleitoral 2026</h1>
-      <p>Digite os números e confira nome e foto da candidatura antes de gerar a cola.</p>
+      <p>Digite os números ou pesquise por nome, confira a foto da candidatura antes de gerar a cola.</p>
     </header>
 
     <div class="aviso" style="padding:10px 14px; margin-bottom:12px;">
@@ -479,6 +601,7 @@
 
     <section class="form-card">
       <h2>Preencha sua cola</h2>
+        <p class="orientacao-campos">Digite o número ou nome do(a) candidato(a).</p>
       <p style="margin:0 0 8px;color:var(--muted);font-size:13px;">Rio Grande do Norte • Eleições 2026</p>
       <input id="uf" type="hidden" value="RN" />
 
@@ -488,43 +611,43 @@
 
       <div class="campo">
         <label for="depFederal">Deputado Federal <span class="digitos">4 dígitos</span></label>
-        <input id="depFederal" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Número para Deputado Federal" />
-        <div class="erro-texto">Informe exatamente 4 dígitos.</div>
+        <div class="campo-com-sugestoes"><input id="depFederal" autocomplete="off" aria-label="Número para Deputado Federal">
+        <div class="erro-texto">Informe exatamente 4 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-depFederal"></div></div>
         <div id="previewDepFederal" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="depEstadual">Deputado Estadual <span class="digitos">5 dígitos</span></label>
-        <input id="depEstadual" inputmode="numeric" maxlength="5" autocomplete="off" aria-label="Número para Deputado Estadual" />
-        <div class="erro-texto">Informe exatamente 5 dígitos.</div>
+        <div class="campo-com-sugestoes"><input id="depEstadual" autocomplete="off" aria-label="Número para Deputado Estadual">
+        <div class="erro-texto">Informe exatamente 5 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-depEstadual"></div></div>
         <div id="previewDepEstadual" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="senador1">Senador — 1ª vaga <span class="digitos">3 dígitos</span></label>
-        <input id="senador1" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="Número para Senador primeira vaga" />
-        <div class="erro-texto">Informe exatamente 3 dígitos.</div>
+        <div class="campo-com-sugestoes"><input id="senador1" autocomplete="off" aria-label="Número para Senador primeira vaga">
+        <div class="erro-texto">Informe exatamente 3 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-senador1"></div></div>
         <div id="previewSenador1" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="senador2">Senador — 2ª vaga <span class="digitos">3 dígitos</span></label>
-        <input id="senador2" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="Número para Senador segunda vaga" />
-        <div class="erro-texto">Informe exatamente 3 dígitos.</div>
+        <div class="campo-com-sugestoes"><input id="senador2" autocomplete="off" aria-label="Número para Senador segunda vaga">
+        <div class="erro-texto">Informe exatamente 3 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-senador2"></div></div>
         <div id="previewSenador2" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="governador">Governador <span class="digitos">2 dígitos</span></label>
-        <input id="governador" inputmode="numeric" maxlength="2" autocomplete="off" aria-label="Número para Governador" />
-        <div class="erro-texto">Informe exatamente 2 dígitos.</div>
+        <div class="campo-com-sugestoes"><input id="governador" autocomplete="off" aria-label="Número para Governador">
+        <div class="erro-texto">Informe exatamente 2 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-governador"></div></div>
         <div id="previewGovernador" class="preview"></div>
       </div>
 
       <div class="campo">
         <label for="presidente">Presidente <span class="digitos">2 dígitos</span></label>
-        <input id="presidente" inputmode="numeric" maxlength="2" autocomplete="off" aria-label="Número para Presidente" />
-        <div class="erro-texto">Informe exatamente 2 dígitos.</div>
+        <div class="campo-com-sugestoes"><input id="presidente" autocomplete="off" aria-label="Número para Presidente">
+        <div class="erro-texto">Informe exatamente 2 dígitos.</div><div class="sugestoes-candidatos" id="sugestoes-presidente"></div></div>
         <div id="previewPresidente" class="preview"></div>
       </div>
 
@@ -613,7 +736,7 @@
       <div class="acoes" style="margin-top:14px">
         <button class="principal" id="imprimir1" type="button">Imprimir 1 cola</button>
         <button class="principal" id="imprimir4" type="button">Imprimir 4 por folha</button>
-        <button class="principal" id="compartilharImagem" type="button">Compartilhar imagem</button>
+        <button class="principal" id="compartilharImagem" type="button">Gerar e compartilhar story</button>
         <button class="secundario" id="editar" type="button">Editar números</button>
       </div>
     </section>
@@ -622,7 +745,7 @@
 
     <div class="rodape">
       A sequência segue a ordem oficial de votação das Eleições 2026. Confira candidaturas nos canais oficiais da Justiça Eleitoral.
-      <div class="autor">Desenvolvido por Caubí Torres • Ferramenta independente, sem indicação ou recomendação de candidaturas.</div>
+      <div class="autor">Desenvolvido por <strong>Caubí Torres</strong></div>
     </div>
   </main>
 
@@ -643,6 +766,7 @@
     const soDigitos = v => (v || '').toString().replace(/\D/g,'');
     const normalizarUF = v => (v || '').toString().trim().toUpperCase();
     const normalizarTexto = v => (v || '').toString().trim();
+    const normalizarNomeBusca = v => normalizarTexto(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 
     function normalizarCargo(cargo) {
       const v = normalizarTexto(cargo).toLowerCase();
@@ -687,11 +811,17 @@
         if (cargo === 'presidente') uf = 'BR';
         if (!cargo || !numero || !uf) return;
 
+        const sqCandidato = normalizarTexto(item.sqCandidato || item.SQ_CANDIDATO || item.sq_candidato);
+        const fotoRemota = corrigirUrlFoto(normalizarTexto(item.foto || item.fotoUrl || item.urlFoto));
+        const fotoLocal = sqCandidato ? `./fotos/${encodeURIComponent(sqCandidato)}.jpg` : '';
+
         indice.set(chave(uf,cargo,numero), {
           cargo, numero, uf,
           nome: normalizarTexto(item.nomeUrna || item.nome || item.candidato),
           partido: normalizarTexto(item.partido || item.siglaPartido),
-          foto: corrigirUrlFoto(normalizarTexto(item.foto || item.fotoUrl || item.urlFoto)),
+          foto: fotoLocal || fotoRemota,
+          fotoRemota,
+          sqCandidato,
           vice: normalizarTexto(item.vice || item.nomeVice),
           situacao: normalizarTexto(item.situacao || item.situacaoCandidatura)
         });
@@ -730,7 +860,9 @@
 
     function previewHTMLCandidato(cfg,c){
       const meta = [`Número ${c.numero}`, c.partido, c.uf !== 'BR' ? c.uf : '', c.situacao].filter(Boolean).join(' • ');
-      const foto = c.foto ? `<img src="${c.foto}" alt="Foto de ${c.nome}" onerror="this.parentElement.innerHTML='<span>Foto indisponível</span>'">` : '<span>Sem foto</span>';
+      const foto = c.foto
+        ? `<img src="${c.foto}" alt="Foto de ${c.nome}" data-remota="${c.fotoRemota || ''}" onerror="if(this.dataset.remota && this.src !== this.dataset.remota){this.src=this.dataset.remota;this.dataset.remota='';}else{this.parentElement.innerHTML='<span>Foto indisponível</span>';}">`
+        : '<span>Sem foto</span>';
       const vice = c.vice ? `<div class="preview-meta">Vice: ${c.vice}</div>` : '';
       return `<div class="preview-foto">${foto}</div><div class="preview-info"><div class="preview-cargo">${cfg.titulo}</div><div class="preview-nome">${c.nome || 'Nome não informado'}</div><div class="preview-meta">${meta}</div>${vice}</div>`;
     }
@@ -738,7 +870,16 @@
     function atualizarPreview(cfg){
       const input = document.getElementById(cfg.id);
       const preview = document.getElementById(cfg.previewId);
-      const numero = soDigitos(input.value).slice(0,cfg.len);
+      const valor = normalizarTexto(input.value);
+
+      // Enquanto houver letras, a pesquisa por nome cuida do campo.
+      if(/[a-zA-ZÀ-ÿ]/.test(valor)){
+        preview.className='preview';
+        preview.innerHTML='';
+        return;
+      }
+
+      const numero = soDigitos(valor).slice(0,cfg.len);
       input.value = numero;
 
       if(numero.length < cfg.len){ preview.className='preview'; preview.innerHTML=''; return; }
@@ -760,21 +901,219 @@
       }
     }
 
+
+
+    function candidatosDoCargo(cfg){
+      const ufAtual = normalizarUF(document.getElementById('uf').value);
+      return candidatos
+        .map(item => {
+          const cargo = normalizarCargo(item.cargo);
+          let uf = normalizarUF(item.uf || item.estado || '');
+          if (cargo === 'presidente') uf = 'BR';
+          const numero = soDigitos(item.numero);
+          if (cargo !== cfg.cargoLookup) return null;
+          if (cfg.usaUF && uf !== ufAtual) return null;
+          if (!cfg.usaUF && uf !== 'BR') return null;
+          return indice.get(chave(uf, cargo, numero)) || null;
+        })
+        .filter(Boolean);
+    }
+
+    function fecharSugestoes(excetoId=''){
+      document.querySelectorAll('.sugestoes-candidatos').forEach(box => {
+        if(box.id !== `sugestoes-${excetoId}`) box.classList.remove('aberta');
+      });
+    }
+
+    function renderizarSugestoes(cfg, termo){
+      const box = document.getElementById(`sugestoes-${cfg.id}`);
+      const texto = normalizarTexto(termo);
+      const soNumero = /^\d+$/.test(texto);
+
+      box.innerHTML = '';
+
+      // Para número, mantém o comportamento original e não mostra lista.
+      if(!texto || soNumero){
+        box.classList.remove('aberta');
+        return;
+      }
+
+      const q = normalizarNomeBusca(texto);
+      if(q.length < 2){
+        box.innerHTML = '<div class="resultado-vazio">Digite pelo menos 2 letras.</div>';
+        box.classList.add('aberta');
+        return;
+      }
+
+      if(!basePronta){
+        box.innerHTML = '<div class="resultado-vazio">A base de candidaturas ainda está carregando.</div>';
+        box.classList.add('aberta');
+        return;
+      }
+
+      const encontrados = candidatosDoCargo(cfg)
+        .filter(c => normalizarNomeBusca(c.nome).includes(q))
+        .sort((a,b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'))
+        .slice(0, 10);
+
+      if(!encontrados.length){
+        box.innerHTML = '<div class="resultado-vazio">Nenhuma candidatura encontrada.</div>';
+        box.classList.add('aberta');
+        return;
+      }
+
+      encontrados.forEach(c => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'resultado-candidato';
+
+        const fotoLocal = c.sqCandidato ? `./fotos/${c.sqCandidato}.jpg` : (c.foto || '');
+        const foto = fotoLocal
+          ? `<img src="${fotoLocal}" alt="" onerror="this.outerHTML='<div class=&quot;resultado-sem-foto&quot;>Sem foto</div>'">`
+          : '<div class="resultado-sem-foto">Sem foto</div>';
+
+        const meta = [c.partido, c.uf !== 'BR' ? c.uf : ''].filter(Boolean).join(' • ');
+        btn.innerHTML = `${foto}<div class="resultado-info"><strong>${c.nome || 'Nome não informado'}</strong><span>${meta}</span></div><div class="resultado-numero">${c.numero}</div>`;
+
+        btn.addEventListener('click', () => {
+          const input = document.getElementById(cfg.id);
+          input.value = c.numero;
+          input.classList.remove('erro');
+          const erro = input.parentElement.querySelector('.erro-texto');
+          if(erro) erro.style.display = 'none';
+          box.classList.remove('aberta');
+          atualizarPreview(cfg);
+          if(cfg.id === 'senador1' || cfg.id === 'senador2') validarSenadoresDiferentes();
+
+          // Após escolher uma candidatura pelo nome, avança automaticamente
+          // para o próximo cargo quando houver um.
+          const idx = campos.findIndex(item => item.id === cfg.id);
+          if(idx >= 0 && idx < campos.length - 1){
+            setTimeout(() => {
+              const proximo = document.getElementById(campos[idx + 1].id);
+              proximo.focus();
+              proximo.select();
+            }, 60);
+          } else {
+            input.focus();
+            input.select();
+          }
+        });
+
+        box.appendChild(btn);
+      });
+
+      box.classList.add('aberta');
+    }
+
+    campos.forEach(cfg => {
+      const input = document.getElementById(cfg.id);
+
+      input.addEventListener('input', () => {
+        const valor = input.value;
+        if(/[a-zA-ZÀ-ÿ]/.test(valor)){
+          renderizarSugestoes(cfg, valor);
+        } else {
+          fecharSugestoes();
+          atualizarPreview(cfg);
+        }
+      });
+
+      input.addEventListener('focus', () => {
+        if(/[a-zA-ZÀ-ÿ]/.test(input.value)) renderizarSugestoes(cfg, input.value);
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if(!e.target.closest('.campo-com-sugestoes')) fecharSugestoes();
+    });
+
+    // No computador: setas ↑/↓ navegam entre os cargos quando o campo contém número.
+    // Se a pesquisa por nome estiver aberta, as setas permanecem disponíveis para a lista.
+    campos.forEach((cfg, idx) => {
+      const input = document.getElementById(cfg.id);
+      input.addEventListener('keydown', (e) => {
+        const sugestoes = document.getElementById(`sugestoes-${cfg.id}`);
+        const listaAberta = sugestoes && sugestoes.classList.contains('aberta');
+        const valor = normalizarTexto(input.value);
+        const ehNumero = /^\d*$/.test(valor);
+
+        if(listaAberta || !ehNumero) return;
+
+        if(e.key === 'ArrowDown' && idx < campos.length - 1){
+          e.preventDefault();
+          const proximo = document.getElementById(campos[idx + 1].id);
+          proximo.focus();
+          proximo.select();
+        } else if(e.key === 'ArrowUp' && idx > 0){
+          e.preventDefault();
+          const anterior = document.getElementById(campos[idx - 1].id);
+          anterior.focus();
+          anterior.select();
+        } else if(e.key === 'Enter' && valor.length === cfg.len && idx < campos.length - 1){
+          e.preventDefault();
+          const proximo = document.getElementById(campos[idx + 1].id);
+          proximo.focus();
+          proximo.select();
+        }
+      });
+    });
+
+    campos.forEach(c=>{
+      const input=document.getElementById(c.id);
+      input.addEventListener('input',()=>{
+        input.classList.remove('erro');
+        const erro = input.parentElement.querySelector('.erro-texto');
+        if(erro) erro.style.display='none';
+
+        // Para números, limita ao tamanho do cargo. Para nomes, preserva o texto.
+        if(!/[a-zA-ZÀ-ÿ]/.test(input.value)){
+          input.value=soDigitos(input.value).slice(0,c.len);
+          atualizarPreview(c);
+          if(c.id === 'senador1' || c.id === 'senador2') validarSenadoresDiferentes();
+        }
+      });
+    });
+
+
+    function validarSenadoresDiferentes(){
+      const s1 = soDigitos(document.getElementById('senador1').value);
+      const s2 = soDigitos(document.getElementById('senador2').value);
+      const input2 = document.getElementById('senador2');
+      const erro2 = input2.parentElement.querySelector('.erro-texto');
+
+      if(s1.length === 3 && s2.length === 3 && s1 === s2){
+        input2.classList.add('erro');
+        if(erro2){
+          erro2.textContent = 'Escolha uma candidatura diferente para a segunda vaga de Senador.';
+          erro2.style.display = 'block';
+        }
+        return false;
+      }
+
+      if(erro2 && erro2.textContent.includes('segunda vaga de Senador')){
+        erro2.style.display = 'none';
+      }
+      input2.classList.remove('erro');
+      return true;
+    }
+
     function atualizarTodosPreviews(){ campos.forEach(atualizarPreview); }
 
     function validar(){
+      if(!validarSenadoresDiferentes()) return;
       let ok=true;
       campos.forEach(c=>{
-        const input=document.getElementById(c.id), erro=input.nextElementSibling;
+        const input=document.getElementById(c.id), erro=input.parentElement.querySelector('.erro-texto');
         if(input.value.length!==c.len){ input.classList.add('erro'); erro.style.display='block'; ok=false; }
         else{ input.classList.remove('erro'); erro.style.display='none'; }
       });
 
       const s1=document.getElementById('senador1').value, s2=document.getElementById('senador2').value;
       if(s1 && s2 && s1===s2){
-        const input=document.getElementById('senador2'), erro=input.nextElementSibling;
+        const input=document.getElementById('senador2'), erro=input.parentElement.querySelector('.erro-texto');
         input.classList.add('erro'); erro.textContent='Os dois votos para Senador devem usar números diferentes.'; erro.style.display='block'; ok=false;
-      }else document.getElementById('senador2').nextElementSibling.textContent='Informe exatamente 3 dígitos.';
+      }else document.getElementById('senador2').parentElement.querySelector('.erro-texto').textContent='Informe exatamente 3 dígitos.';
       return ok;
     }
 
@@ -787,21 +1126,14 @@
       if(c && !c.tipo){
         nome.textContent=c.nome || 'Nome não informado';
         meta.textContent=[c.partido, cfg.usaUF && c.uf!=='BR' ? c.uf : ''].filter(Boolean).join(' • ');
-        if(c.foto){ foto.innerHTML=`<img src="${c.foto}" alt="Foto de ${c.nome}" onerror="this.parentElement.classList.remove('visivel')">`; foto.classList.add('visivel'); }
+        if(c.foto){
+          foto.innerHTML=`<img src="${c.foto}" alt="Foto de ${c.nome}" data-remota="${c.fotoRemota || ''}" onerror="if(this.dataset.remota && this.src !== this.dataset.remota){this.src=this.dataset.remota;this.dataset.remota='';}else{this.parentElement.classList.remove('visivel');}">`;
+          foto.classList.add('visivel');
+        }
       }else{
         nome.textContent=''; meta.textContent='';
       }
     }
-
-    campos.forEach(c=>{
-      const input=document.getElementById(c.id);
-      input.addEventListener('input',()=>{
-        input.value=soDigitos(input.value).slice(0,c.len);
-        input.classList.remove('erro'); input.nextElementSibling.style.display='none';
-        atualizarPreview(c);
-      });
-    });
-
     document.getElementById('gerar').addEventListener('click',()=>{
       if(!validar()) return;
       campos.forEach(preencherLinhaCola);
@@ -857,7 +1189,10 @@
           numero,
           nome: cand && !cand.tipo ? (cand.nome || '') : '',
           partido: cand && !cand.tipo ? (cand.partido || '') : '',
-          foto: cand && !cand.tipo ? (cand.foto || '') : ''
+          foto: cand && !cand.tipo ? (cand.foto || '') : '',
+          fotoRemota: cand && !cand.tipo ? (cand.fotoRemota || '') : '',
+          sqCandidato: cand && !cand.tipo ? (cand.sqCandidato || '') : '',
+          uf: cand && !cand.tipo ? (cand.uf || (cfg.usaUF ? 'RN' : 'BR')) : (cfg.usaUF ? 'RN' : 'BR')
         };
       });
     }
@@ -901,17 +1236,12 @@
       });
     }
 
-    async function carregarFotoSegura(url){
-      if(!url) return null;
-
-      const tentativas = [
-        url,
-        `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=220&h=280&fit=cover&output=jpg`
-      ];
-
+    async function carregarFotoSegura(item){
+      if(!item) return null;
+      const tentativas = [item.foto, item.fotoRemota].filter(Boolean);
       for(const endereco of tentativas){
         try{
-          const resposta = await fetch(endereco, { mode:'cors', cache:'force-cache' });
+          const resposta = await fetch(endereco, { cache:'force-cache' });
           if(!resposta.ok) continue;
           const blob = await resposta.blob();
           if(!blob.type.startsWith('image/')) continue;
@@ -940,7 +1270,7 @@
       document.getElementById('cola').style.display='block';
 
       const itens = obterItensCola();
-      const fotos = await Promise.all(itens.map(item => carregarFotoSegura(item.foto)));
+      const fotos = await Promise.all(itens.map(item => carregarFotoSegura(item)));
 
       const canvas = document.createElement('canvas');
       canvas.width = 1080;
@@ -953,9 +1283,12 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0,0,1080,1920);
 
-      ctx.fillStyle = 'rgba(31,111,67,0.07)';
-      ctx.beginPath(); ctx.arc(920,130,180,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(150,1760,210,0,Math.PI*2); ctx.fill();
+      // Formas de fundo mais sutis para não competir com os cartões
+      ctx.fillStyle = 'rgba(31,111,67,0.05)';
+      ctx.beginPath(); ctx.arc(940,120,165,0,Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = 'rgba(31,111,67,0.04)';
+      ctx.beginPath(); ctx.arc(20,1830,145,0,Math.PI*2); ctx.fill();
 
       ctx.fillStyle = '#171717';
       ctx.textAlign = 'center';
@@ -967,9 +1300,9 @@
 
       const cardX = 64;
       const cardW = 952;
-      const cardH = 232;
-      const gap = 18;
-      const startY = 210;
+      const cardH = 220;
+      const gap = 14;
+      const startY = 205;
 
       itens.forEach((item, i) => {
         const y = startY + i * (cardH + gap);
@@ -981,9 +1314,9 @@
         ctx.fillText(item.titulo.toUpperCase(), cardX + 28, y + 38);
 
         const fotoX = cardX + 28;
-        const fotoY = y + 58;
+        const fotoY = y + 52;
         const fotoW = 96;
-        const fotoH = 122;
+        const fotoH = 124;
 
         if(fotos[i]){
           ctx.save();
@@ -1005,24 +1338,24 @@
         ctx.textAlign = 'left';
         ctx.fillStyle = '#111';
         ctx.font = 'bold 54px Arial';
-        ctx.fillText(item.numero, infoX, y + 115);
+        ctx.fillText(item.numero, infoX, y + 106);
 
         ctx.fillStyle = '#1a1a1a';
         ctx.font = 'bold 28px Arial';
         const linhasNome = wrapText(ctx, item.nome || 'Candidatura não localizada', 680).slice(0,2);
-        ctx.fillText(linhasNome[0] || '', infoX, y + 150);
-        if(linhasNome[1]) ctx.fillText(linhasNome[1], infoX, y + 182);
+        ctx.fillText(linhasNome[0] || '', infoX, y + 142);
+        if(linhasNome[1]) ctx.fillText(linhasNome[1], infoX, y + 173);
 
         ctx.fillStyle = '#4f5b5d';
         ctx.font = '24px Arial';
         const meta = [item.partido || '', item.titulo === 'Presidente' ? '' : 'RN'].filter(Boolean).join(' • ');
-        ctx.fillText(meta, infoX, y + 208);
+        ctx.fillText(meta, infoX, y + 202);
       });
 
       ctx.fillStyle = '#617172';
       ctx.textAlign = 'center';
       ctx.font = '22px Arial';
-      ctx.fillText('Organize seus números antes de votar.', 540, 1870);
+      ctx.fillText('Organize seus números antes de votar.', 540, 1815);
 
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       if(!blob) throw new Error('Não foi possível gerar a imagem.');
