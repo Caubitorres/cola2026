@@ -73,7 +73,7 @@
     "uf": "RN",
     "cargo": "deputado_federal",
     "numero": "1230",
-    "nomeUrna": "SAMELA GOMES",
+    "nomeUrna": "PROFESSORA SÂMELA",
     "partido": "PDT",
     "situacao": "#NE",
     "sqCandidato": "200002546765",
@@ -83,7 +83,7 @@
     "uf": "RN",
     "cargo": "deputado_federal",
     "numero": "1233",
-    "nomeUrna": "ESTÁCIO RUBINSTEIN",
+    "nomeUrna": "DR. ESTÁCIO",
     "partido": "PDT",
     "situacao": "#NE",
     "sqCandidato": "200002546767",
@@ -103,7 +103,7 @@
     "uf": "RN",
     "cargo": "deputado_federal",
     "numero": "1244",
-    "nomeUrna": "DVALDO MACAU",
+    "nomeUrna": "PROFESSOR EDVALDO JÚNIOR",
     "partido": "PDT",
     "situacao": "#NE",
     "sqCandidato": "200002546761",
@@ -123,7 +123,7 @@
     "uf": "RN",
     "cargo": "deputado_federal",
     "numero": "1277",
-    "nomeUrna": "DAVID RODRIGUES",
+    "nomeUrna": "DAVI RODRIGUES JR.",
     "partido": "PDT",
     "situacao": "#NE",
     "sqCandidato": "200002546762",
@@ -203,7 +203,7 @@
     "uf": "RN",
     "cargo": "deputado_federal",
     "numero": "1411",
-    "nomeUrna": "DR SALOMÃO",
+    "nomeUrna": "DR. SALOMÃO",
     "partido": "MISSÃO",
     "situacao": "#NE",
     "sqCandidato": "200002547284",
@@ -313,7 +313,7 @@
     "uf": "RN",
     "cargo": "deputado_federal",
     "numero": "2233",
-    "nomeUrna": "NINA SOUZA",
+    "nomeUrna": "NINA",
     "partido": "PL",
     "situacao": "#NE",
     "sqCandidato": "200002533880",
@@ -362,7 +362,7 @@
   {
     "uf": "RN",
     "cargo": "deputado_federal",
-    "numero": "2328",
+    "numero": "2323",
     "nomeUrna": "ANNE BEZERRA",
     "partido": "CIDADANIA",
     "situacao": "#NE",
@@ -832,12 +832,12 @@
   {
     "uf": "RN",
     "cargo": "deputado_federal",
-    "numero": "4500",
-    "nomeUrna": "NEGA DE NENEM BORGES",
+    "numero": "4508",
+    "nomeUrna": "ALEX KROOS",
     "partido": "PSDB",
     "situacao": "#NE",
-    "sqCandidato": "200002538213",
-    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538213/RN"
+    "sqCandidato": "200002538219",
+    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538219/RN"
   },
   {
     "uf": "RN",
@@ -862,6 +862,16 @@
   {
     "uf": "RN",
     "cargo": "deputado_federal",
+    "numero": "4555",
+    "nomeUrna": "NEGA DE NENEM BORGES",
+    "partido": "PSDB",
+    "situacao": "#NE",
+    "sqCandidato": "200002538213",
+    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538213/RN"
+  },
+  {
+    "uf": "RN",
+    "cargo": "deputado_federal",
     "numero": "4566",
     "nomeUrna": "DRA ROSEMARIA",
     "partido": "PSDB",
@@ -878,16 +888,6 @@
     "situacao": "#NE",
     "sqCandidato": "200002538218",
     "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538218/RN"
-  },
-  {
-    "uf": "RN",
-    "cargo": "deputado_federal",
-    "numero": "4581",
-    "nomeUrna": "ALEX KROOS",
-    "partido": "PSDB",
-    "situacao": "#NE",
-    "sqCandidato": "200002538219",
-    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538219/RN"
   },
   {
     "uf": "RN",
@@ -2053,7 +2053,7 @@
     "uf": "RN",
     "cargo": "deputado_estadual",
     "numero": "25600",
-    "nomeUrna": "CHICO DO CHAPÉU DE COURO",
+    "nomeUrna": "CHICO CHAPÉU DE COURO",
     "partido": "PRD",
     "situacao": "#NE",
     "sqCandidato": "200002546780",
@@ -2282,16 +2282,6 @@
   {
     "uf": "RN",
     "cargo": "deputado_estadual",
-    "numero": "45077",
-    "nomeUrna": "JONATA NASCIMENTO",
-    "partido": "PSDB",
-    "situacao": "#NE",
-    "sqCandidato": "200002538238",
-    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538238/RN"
-  },
-  {
-    "uf": "RN",
-    "cargo": "deputado_estadual",
     "numero": "45084",
     "nomeUrna": "GILVAN BALADA",
     "partido": "PSDB",
@@ -2303,7 +2293,7 @@
     "uf": "RN",
     "cargo": "deputado_estadual",
     "numero": "45111",
-    "nomeUrna": "ÉRIKO JÁCOME",
+    "nomeUrna": "ERIKO JÁCOME",
     "partido": "PSDB",
     "situacao": "#NE",
     "sqCandidato": "200002538246",
@@ -2323,7 +2313,7 @@
     "uf": "RN",
     "cargo": "deputado_estadual",
     "numero": "45190",
-    "nomeUrna": "MAJOR MOISÉS",
+    "nomeUrna": "POLICIAL CANTOR",
     "partido": "PSDB",
     "situacao": "#NE",
     "sqCandidato": "200002538222",
@@ -2352,7 +2342,7 @@
   {
     "uf": "RN",
     "cargo": "deputado_estadual",
-    "numero": "45231",
+    "numero": "45321",
     "nomeUrna": "CLEITON DA POLICLÍNICA",
     "partido": "PSDB",
     "situacao": "#NE",
@@ -2378,6 +2368,16 @@
     "situacao": "#NE",
     "sqCandidato": "200002538245",
     "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538245/RN"
+  },
+  {
+    "uf": "RN",
+    "cargo": "deputado_estadual",
+    "numero": "45454",
+    "nomeUrna": "ENGRÁCIA ALVES",
+    "partido": "PSDB",
+    "situacao": "#NE",
+    "sqCandidato": "200002538241",
+    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538241/RN"
   },
   {
     "uf": "RN",
@@ -2453,11 +2453,11 @@
     "uf": "RN",
     "cargo": "deputado_estadual",
     "numero": "45777",
-    "nomeUrna": "ENGRÁCIA ALVES",
+    "nomeUrna": "JONATA NASCIMENTO",
     "partido": "PSDB",
     "situacao": "#NE",
-    "sqCandidato": "200002538241",
-    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538241/RN"
+    "sqCandidato": "200002538238",
+    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/200002538238/RN"
   },
   {
     "uf": "RN",
@@ -2623,7 +2623,7 @@
     "uf": "RN",
     "cargo": "deputado_estadual",
     "numero": "80000",
-    "nomeUrna": "CHAPA COLETIVA FNR",
+    "nomeUrna": "JULIO DA FNR",
     "partido": "UP",
     "situacao": "#NE",
     "sqCandidato": "200002547829",
@@ -2833,7 +2833,7 @@
     "uf": "RN",
     "cargo": "governador",
     "numero": "36",
-    "nomeUrna": "RODRIGO BOLSONARO",
+    "nomeUrna": "RODRIGO DE BOLSONARO",
     "partido": "AGIR",
     "situacao": "#NE",
     "sqCandidato": "200002546756",
@@ -2933,11 +2933,11 @@
     "uf": "BR",
     "cargo": "presidente",
     "numero": "28",
-    "nomeUrna": "PABLO MARÇAL",
+    "nomeUrna": "LEONARDO AVALANCHE",
     "partido": "PRTB",
     "situacao": "#NE",
-    "sqCandidato": "280002553884",
-    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/280002553884/BR"
+    "sqCandidato": "280002554479",
+    "foto": "https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/20322002026/280002554479/BR"
   },
   {
     "uf": "BR",
